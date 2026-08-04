@@ -56,20 +56,48 @@ Women's
 </div>
 
 <h2 id="result"></h2>
+<div id="competition" style="display:none">
+
+<h2>Choose Competition</h2>
+<button onclick="chooseCompetition('BBL')">🟣 BBL</button>
+<button onclick="chooseCompetition('IPL')">🔵 IPL</button>
+<button onclick="chooseCompetition('ICC')">🟢 ICC</button>
+<button onclick="chooseCompetition('Test')">🔴 Test Cricket</button>
+
+</div>
+    <div id="teams" style="display:none">
+
+<h2 id="teamTitle">Choose Your Team</h2>
+
+<button onclick="randomTeam()">🎲 Random</button>
+
+<br>
+
+<button onclick="pickTeam('Australia')">🇦🇺 Australia</button>
+<button onclick="pickTeam('India')">🇮🇳 India</button>
+<button onclick="pickTeam('England')">🏴 England</button>
+<button onclick="pickTeam('South Africa')">🇿🇦 South Africa</button>
+
+</div>
 
 
-<script>
+<h2 id="teamResult"></h2>
+<div id="teams" style="display:none">
 
-function startGame(mode){
+<h2 id="teamTitle">Choose Your Team</h2>
 
-document.getElementById("result").innerHTML =
-"You selected " + mode + 
-" cricket! Next: choose competition.";
+<button onclick="randomTeam()">🎲 Random</button>
 
-}
+<br>
 
-</script>
+<button onclick="pickTeam('Australia')">🇦🇺 Australia</button>
+<button onclick="pickTeam('India')">🇮🇳 India</button>
+<button onclick="pickTeam('England')">🏴 England</button>
+<button onclick="pickTeam('South Africa')">🇿🇦 South Africa</button>
+
+</div>
 
 
+<h2 id="teamResult"></h2>
 </body>
 </html>
