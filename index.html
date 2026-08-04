@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Can You Beat 20?</title>
+
+<style>
+body {
+    background: #0b3d2e;
+    color: white;
+    font-family: Arial;
+    text-align: center;
+}
+
+button {
+    background: gold;
+    border: none;
+    padding: 15px 30px;
+    margin: 10px;
+    font-size: 20px;
+    border-radius: 10px;
+}
+
+.card {
+    background: white;
+    color: black;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 15px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🏏 Can You Beat 20?</h1>
+
+<p>
+Draft your cricket team.
+Win 20 games straight.
+Can you survive?
+</p>
+
+<div class="card">
+
+<h2>Choose Mode</h2>
+
+<button onclick="startGame('Mens')">
+Men's
+</button>
+
+<button onclick="startGame('Womens')">
+Women's
+</button>
+
+</div>
+
+<h2 id="result"></h2>
+
+
+<script>
+
+function startGame(mode){
+
+document.getElementById("result").innerHTML =
+"You selected " + mode + 
+" cricket! Next: choose competition.";
+
+}
+
+</script>
+
+
+</body>
+</html>
