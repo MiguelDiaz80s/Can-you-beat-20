@@ -1,33 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 <title>Can You Beat 20?</title>
 
-<style>
-body {
-    background: #0b3d2e;
-    color: white;
-    font-family: Arial;
-    text-align: center;
-}
-
-button {
-    background: gold;
-    border: none;
-    padding: 15px 30px;
-    margin: 10px;
-    font-size: 20px;
-    border-radius: 10px;
-}
-
-.card {
-    background: white;
-    color: black;
-    padding: 20px;
-    margin: 20px;
-    border-radius: 15px;
-}
-</style>
+<link rel="stylesheet" href="style.css">
 
 </head>
 
@@ -36,10 +13,11 @@ button {
 <h1>🏏 Can You Beat 20?</h1>
 
 <p>
-Draft your cricket team.
-Win 20 games straight.
+Draft your cricket team.<br>
+Win 20 games straight.<br>
 Can you survive?
 </p>
+
 
 <div class="card">
 
@@ -55,49 +33,70 @@ Women's
 
 </div>
 
+
 <h2 id="result"></h2>
+
+
 <div id="competition" style="display:none">
 
 <h2>Choose Competition</h2>
-<button onclick="chooseCompetition('BBL')">🟣 BBL</button>
-<button onclick="chooseCompetition('IPL')">🔵 IPL</button>
-<button onclick="chooseCompetition('ICC')">🟢 ICC</button>
-<button onclick="chooseCompetition('Test')">🔴 Test Cricket</button>
+
+<button onclick="chooseCompetition('BBL')">
+🟣 BBL
+</button>
+
+<button onclick="chooseCompetition('IPL')">
+🔵 IPL
+</button>
+
+<button onclick="chooseCompetition('ICC')">
+🟢 ICC
+</button>
+
+<button onclick="chooseCompetition('Test')">
+🔴 Test Cricket
+</button>
 
 </div>
-    <div id="teams" style="display:none">
-
-<h2 id="teamTitle">Choose Your Team</h2>
-
-<button onclick="randomTeam()">🎲 Random</button>
-
-<br>
-
-<button onclick="pickTeam('Australia')">🇦🇺 Australia</button>
-<button onclick="pickTeam('India')">🇮🇳 India</button>
-<button onclick="pickTeam('England')">🏴 England</button>
-<button onclick="pickTeam('South Africa')">🇿🇦 South Africa</button>
-
-</div>
 
 
-<h2 id="teamResult"></h2>
 <div id="teams" style="display:none">
 
-<h2 id="teamTitle">Choose Your Team</h2>
+<h2 id="teamTitle">
+Choose Your Team
+</h2>
 
-<button onclick="randomTeam()">🎲 Random</button>
+<button onclick="randomTeam()">
+🎲 Random
+</button>
 
 <br>
 
-<button onclick="pickTeam('Australia')">🇦🇺 Australia</button>
-<button onclick="pickTeam('India')">🇮🇳 India</button>
-<button onclick="pickTeam('England')">🏴 England</button>
-<button onclick="pickTeam('South Africa')">🇿🇦 South Africa</button>
+<button onclick="pickTeam('Australia')">
+🇦🇺 Australia
+</button>
+
+<button onclick="pickTeam('India')">
+🇮🇳 India
+</button>
+
+<button onclick="pickTeam('England')">
+🏴 England
+</button>
+
+<button onclick="pickTeam('South Africa')">
+🇿🇦 South Africa
+</button>
 
 </div>
 
 
 <h2 id="teamResult"></h2>
+
+
+<script src="game.js"></script>
+
+
 </body>
+
 </html>
