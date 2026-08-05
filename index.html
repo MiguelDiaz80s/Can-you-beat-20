@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Can You Beat 20?</title>
+
+<link rel="stylesheet" href="Style.css">
+
+</head>
+
+
+<body>
+
+
+<h1>🏏 Can You Beat 20?</h1>
+
+
+<p>
+Draft your cricket team.<br>
+Win 20 games straight.<br>
+Can you survive?
+</p>
+
+
+
+<div class="card">
+
+<h2>Choose Mode</h2>
+
+<button onclick="startGame('Mens')">
+Men's
+</button>
+
+<button onclick="startGame('Womens')">
+Women's
+</button>
+
+</div>
+
+
+
+<h2 id="result"></h2>
+
+
+
+
+<div id="competition" style="display:none">
+
+<h2>Choose Competition</h2>
+
+<button onclick="chooseCompetition('BBL')">
+🟣 BBL
+</button>
+
+<button onclick="chooseCompetition('IPL')">
+🔵 IPL
+</button>
+
+<button onclick="chooseCompetition('ICC')">
+🟢 ICC
+</button>
+
+<button onclick="chooseCompetition('Test')">
+🔴 Test Cricket
+</button>
+
+</div>
+
+
+
+
+
+<div id="teams" style="display:none">
+
+<h2 id="teamTitle">
+Choose Country
+</h2>
+
+
+<button onclick="randomTeam()">
+🎲 Random
+</button>
+
+
+<br><br>
+
+
+<button onclick="pickTeam('Australia')">
+🇦🇺 Australia
+</button>
+
+
+<button onclick="pickTeam('India')">
+🇮🇳 India
+</button>
+
+
+<button onclick="pickTeam('England')">
+🏴 England
+</button>
+
+
+<button onclick="pickTeam('SouthAfrica')">
+🇿🇦 South Africa
+</button>
+
+
+</div>
+
+
+
+
+
+
+<div id="era" style="display:none">
+
+<h2>
+Choose Era
+</h2>
+
+
+<button onclick="chooseEra('1900s')">
+1900s
+</button>
+
+
+<button onclick="chooseEra('1910s')">
+1910s
+</button>
+
+
+<button onclick="chooseEra('1920s')">
+1920s
+</button>
+
+
+<button onclick="chooseEra('1930s')">
+1930s
+</button>
+
+
+<button onclick="chooseEra('1940s')">
+1940s
+</button>
+
+
+<button onclick="chooseEra('1950s')">
+1950s
+</button>
+
+
+<button onclick="chooseEra('1960s')">
+1960s
+</button>
+
+
+<button onclick="chooseEra('1970s')">
+1970s
+</button>
+
+
+<button onclick="chooseEra('1980s')">
+1980s
+</button>
+
+
+<button onclick="chooseEra('1990s')">
+1990s
+</button>
+
+
+<button onclick="chooseEra('2000s')">
+2000s
+</button>
+
+
+<button onclick="chooseEra('2010s')">
+2010s
+</button>
+
+
+<button onclick="chooseEra('2020s')">
+2020s
+</button>
+
+
+</div>
+
+
+
+
+
+
+
+<div id="draft" style="display:none">
+
+
+<h2>
+Draft Players
+</h2>
+
+
+<p id="draftCount">
+Players: 0/11
+</p>
+
+
+<div id="playerCards">
+
+</div>
+
+
+</div>
+
+
+
+
+
+<h2 id="teamResult"></h2>
+
+
+
+
+
+<script src="competitions.js"></script>
+
+<script src="teams.js"></script>
+
+<script src="players/australia.js"></script>
+
+<script src="game.js"></script>
+
+
+</body>
+
+</html>
