@@ -4,7 +4,7 @@
 <head>
 <title>Can You Beat 20?</title>
 
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="Style.css">
 
 </head>
 
@@ -88,6 +88,24 @@ Choose Your Team
 🇿🇦 South Africa
 </button>
 
+</div>
+
+
+<!-- Added missing era and draft sections that game.js expects -->
+<div id="era" style="display:none">
+  <h2>Choose Era</h2>
+  <button onclick="chooseEra('1930s')">1930s</button>
+  <button onclick="chooseEra('1980s')">1980s</button>
+  <button onclick="chooseEra('1990s')">1990s</button>
+  <button onclick="chooseEra('2000s')">2000s</button>
+  <button onclick="chooseEra('2010s')">2010s</button>
+  <button onclick="chooseEra('2020s')">2020s</button>
+</div>
+
+<div id="draft" style="display:none">
+  <h2>Draft Players</h2>
+  <div id="draftCount">Players: 0/11</div>
+  <div id="playerCards"></div>
 </div>
 
 
