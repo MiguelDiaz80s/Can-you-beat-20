@@ -147,3 +147,22 @@ function selectPlayer(name){
     }
 
 }
+function randomTeam(){
+
+    let teams = Object.keys(countries);
+
+    selectedCountry = teams[Math.floor(Math.random() * teams.length)];
+
+    let eras = Object.keys(countries[selectedCountry]);
+
+    selectedEra = eras[Math.floor(Math.random() * eras.length)];
+
+
+    document.getElementById("teams").style.display = "none";
+    document.getElementById("era").style.display = "none";
+    document.getElementById("draft").style.display = "block";
+
+
+    loadPlayers();
+
+}
