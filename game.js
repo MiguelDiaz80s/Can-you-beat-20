@@ -57,8 +57,26 @@ function chooseEra(era){
 
 function loadPlayers(){
 
-    let players =
-    countries[selectedCountry][selectedEra];
+    console.log("Loading:", selectedCountry, selectedEra);
+
+
+    let players = countries[selectedCountry]?.[selectedEra];
+
+
+    if(!players){
+
+        alert(
+        "No players found for " 
+        + selectedCountry 
+        + " " 
+        + selectedEra
+        );
+
+        console.log(countries);
+
+        return;
+
+    }
 
 
     let cards = "";
@@ -66,13 +84,14 @@ function loadPlayers(){
 
     players.forEach(function(player){
 
+
         cards += `
 
         <div class="card">
 
         <h3>${player.name}</h3>
 
-        <p>${player.role}</p>
+        <p>Role: ${player.role}</p>
 
         <p>Batting: ${player.batting}</p>
 
@@ -81,12 +100,13 @@ function loadPlayers(){
         <p>Fielding: ${player.fielding}</p>
 
         <button onclick="selectPlayer('${player.name}')">
-        Select
+        SELECT
         </button>
 
         </div>
 
         `;
+
 
     });
 
@@ -114,6 +134,10 @@ function selectPlayer(name){
 
     document.getElementById("teamResult").innerHTML =
     "Squad: " + squad.join(", ");
+
+
+    document.getElementById("draftCount").innerHTML =
+    "Players: " + squad.length + "/11";
 
 
     if(squad.length === 11){
