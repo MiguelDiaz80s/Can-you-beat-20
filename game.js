@@ -58,8 +58,9 @@ function chooseEra(era){
 
 function loadPlayers(){
 
+    alert("Loading " + selectedCountry + " " + selectedEra);
+    
     console.log("Loading:", selectedCountry, selectedEra);
-
 
     let players = countries[selectedCountry]?.[selectedEra];
 
