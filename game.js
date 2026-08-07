@@ -7,6 +7,7 @@ let countries = {
     Australia: australia
 };
 
+console.log(australia);
 
 function startGame(mode){
 
