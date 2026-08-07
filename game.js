@@ -7,7 +7,7 @@ let countries = {
     Australia: australia
 };
 
-console.log(australia);
+alert("game.js loaded");
 
 function startGame(mode){
 
