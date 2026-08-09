@@ -59,8 +59,7 @@ function pickTeam(team) {
 
     document.getElementById("era").style.display = "block";
 
-    document.getElementById("draftCount").innerHTML =
-        "Players: 0/11";
+    updateDraftCount();
 
     document.getElementById("teamResult").innerHTML = "";
 }
@@ -80,8 +79,7 @@ function chooseEra(era) {
 
     document.getElementById("draft").style.display = "block";
 
-    document.getElementById("draftCount").innerHTML =
-        "Players: 0/11";
+    updateDraftCount();
 
     document.getElementById("teamResult").innerHTML = "";
 
@@ -175,43 +173,106 @@ function loadPlayers() {
 
 
 // ===============================
+// UPDATE DRAFT COUNTER
+// ===============================
+
+function updateDraftCount() {
+    const el = document.getElementById("draftCount");
+    if (el) {
+        el.innerHTML = "Players: " + squad.length + "/11";
+    }
+}
+
+
+// ===============================
 // SELECT PLAYER
 // ===============================
 
 function selectPlayer(name) {
 
+    // Do not allow more than 11
     if (squad.length >= 11) {
-
         alert("Your XI is already complete!");
-
         return;
     }
 
-
-    if (squad.includes(name)) {
-
+    // Prevent duplicates
+    if (squad.some(function(p) { return p === name; })) {
         alert("You already picked this player!");
-
         return;
     }
 
-
+    // Add player and update UI
     squad.push(name);
-
 
     document.getElementById("teamResult").innerHTML =
         "Squad: " + squad.join(", ");
 
-
-    document.getElementById("draftCount").innerHTML =
-        "Players: " + squad.length + "/11";
-
+    updateDraftCount();
 
     if (squad.length === 11) {
-
         alert("Your XI is complete!");
-
     }
+}
+
+
+// ===============================
+// BACK NAVIGATION
+// ===============================
+
+function backFromDraft() {
+    // Going back from draft to era selection
+    squad = [];
+    selectedEra = "";
+
+    document.getElementById("draft").style.display = "none";
+    document.getElementById("era").style.display = "block";
+
+    // Clear player cards and results
+    const pc = document.getElementById("playerCards");
+    if (pc) pc.innerHTML = "";
+    const tr = document.getElementById("teamResult");
+    if (tr) tr.innerHTML = "";
+
+    updateDraftCount();
+}
+
+function backFromEra() {
+    // Going back from era to team selection
+    squad = [];
+    selectedEra = "";
+
+    document.getElementById("era").style.display = "none";
+    document.getElementById("teams").style.display = "block";
+
+    // Clear draft related UI
+    const pc = document.getElementById("playerCards");
+    if (pc) pc.innerHTML = "";
+    const tr = document.getElementById("teamResult");
+    if (tr) tr.innerHTML = "";
+
+    updateDraftCount();
+}
+
+function backFromTeams() {
+    // Going back from teams to competition selection
+    squad = [];
+    selectedCountry = "";
+    selectedEra = "";
+    selectedCompetition = "";
+
+    document.getElementById("teams").style.display = "none";
+    document.getElementById("competition").style.display = "block";
+
+    // Reset UI
+    const pc = document.getElementById("playerCards");
+    if (pc) pc.innerHTML = "";
+    const tr = document.getElementById("teamResult");
+    if (tr) tr.innerHTML = "";
+    const teamTitle = document.getElementById("teamTitle");
+    if (teamTitle) teamTitle.innerHTML = "Choose Country";
+
+    updateDraftCount();
 }
 
 
@@ -268,8 +329,7 @@ function randomTeam() {
         "block";
 
 
-    document.getElementById("draftCount").innerHTML =
-        "Players: 0/11";
+    updateDraftCount();
 
     document.getElementById("teamResult").innerHTML =
         "";
