@@ -42,6 +42,9 @@ function chooseCompetition(comp) {
 
     document.getElementById("teamTitle").innerHTML =
         "Choose your " + comp + " team";
+
+    // Ensure Teams screen has a Back button to go back to competition
+    ensureBackButton("teams", "backFromTeamsBtn", "Back", backFromTeams);
 }
 
 
@@ -62,6 +65,9 @@ function pickTeam(team) {
     updateDraftCount();
 
     document.getElementById("teamResult").innerHTML = "";
+
+    // Add Back button on Era screen to return to Teams
+    ensureBackButton("era", "backFromEraBtn", "Back", backFromEra);
 }
 
 
@@ -82,6 +88,9 @@ function chooseEra(era) {
     updateDraftCount();
 
     document.getElementById("teamResult").innerHTML = "";
+
+    // Add Back button on Draft screen to return to Era
+    ensureBackButton("draft", "backFromDraftBtn", "Back", backFromDraft);
 
     loadPlayers();
 }
@@ -143,6 +152,8 @@ function loadPlayers() {
 
     players.forEach(function(player) {
 
+        // Use single quotes around the onclick attribute so JSON.stringify's
+        // double-quoted string is safe inside the attribute.
         cards += `
 
         <div class="card">
@@ -157,7 +168,7 @@ function loadPlayers() {
 
             <p>Fielding: ${player.fielding}</p>
 
-            <button onclick="selectPlayer(${JSON.stringify(player.name)})">
+            <button onclick='selectPlayer(${JSON.stringify(player.name)})'>
                 SELECT
             </button>
 
@@ -208,6 +219,7 @@ function selectPlayer(name) {
     document.getElementById("teamResult").innerHTML =
         "Squad: " + squad.join(", ");
 
+    // Immediately update the draft counter after a successful pick
     updateDraftCount();
 
     if (squad.length === 11) {
@@ -252,6 +264,9 @@ function backFromEra() {
     if (tr) tr.innerHTML = "";
 
     updateDraftCount();
+
+    // Ensure Teams screen has a Back button (in case it was removed)
+    ensureBackButton("teams", "backFromTeamsBtn", "Back", backFromTeams);
 }
 
 function backFromTeams() {
@@ -336,4 +351,33 @@ function randomTeam() {
 
 
     loadPlayers();
+}
+
+
+// ===============================
+// HELPERS
+// ===============================
+
+function ensureBackButton(containerId, btnId, label, onClickHandler) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    // If button already exists, do nothing
+    if (document.getElementById(btnId)) return;
+
+    const btn = document.createElement("button");
+    btn.id = btnId;
+    btn.className = "back-button";
+    btn.type = "button";
+    btn.textContent = label;
+    btn.addEventListener("click", function () {
+        try {
+            onClickHandler();
+        } catch (e) {
+            console.error("Back button handler failed:", e);
+        }
+    });
+
+    // Insert the back button at the top of the container
+    container.insertBefore(btn, container.firstChild);
 }
