@@ -1,170 +1,107 @@
 let selectedCountry = "";
 let selectedEra = "";
+let selectedCompetition = "";
 let squad = [];
 
 
-let countries = {
-    Australia: australia
-};
+// ===============================
+// COUNTRY DATA
+// ===============================
 
-alert("game.js loaded");
+let countries = {};
 
-function startGame(mode){
 
-    document.getElementById("result").innerHTML =
-    mode + " cricket selected!";
-
-    document.getElementById("competition").style.display = "block";
-
+// Only add Australia if the file loaded correctly
+if (typeof australia !== "undefined") {
+    countries.Australia = australia;
 }
 
 
-function chooseCompetition(comp){
+// ===============================
+// START GAME
+// ===============================
+
+function startGame(mode) {
+
+    document.getElementById("result").innerHTML =
+        mode + " cricket selected!";
+
+    document.getElementById("competition").style.display = "block";
+}
+
+
+// ===============================
+// CHOOSE COMPETITION
+// ===============================
+
+function chooseCompetition(comp) {
+
+    selectedCompetition = comp;
 
     document.getElementById("competition").style.display = "none";
 
     document.getElementById("teams").style.display = "block";
 
     document.getElementById("teamTitle").innerHTML =
-    "Choose your " + comp + " team";
-
+        "Choose your " + comp + " team";
 }
 
 
-function pickTeam(team){
+// ===============================
+// PICK COUNTRY / TEAM
+// ===============================
+
+function pickTeam(team) {
 
     selectedCountry = team;
+
+    squad = [];
 
     document.getElementById("teams").style.display = "none";
 
     document.getElementById("era").style.display = "block";
 
+    document.getElementById("draftCount").innerHTML =
+        "Players: 0/11";
+
+    document.getElementById("teamResult").innerHTML = "";
 }
 
 
-function chooseEra(era){
+// ===============================
+// CHOOSE ERA
+// ===============================
+
+function chooseEra(era) {
 
     selectedEra = era;
 
+    squad = [];
+
     document.getElementById("era").style.display = "none";
 
     document.getElementById("draft").style.display = "block";
-
-    loadPlayers();
-
-}
-
-
-
-function loadPlayers(){
-
-    alert("Loading " + selectedCountry + " " + selectedEra);
-    
-    console.log("Loading:", selectedCountry, selectedEra);
-
-    let players = countries[selectedCountry]?.[selectedEra];
-
-
-    if(!players){
-
-        alert(
-        "No players found for " 
-        + selectedCountry 
-        + " " 
-        + selectedEra
-        );
-
-        console.log(countries);
-
-        return;
-
-    }
-
-
-    let cards = "";
-
-
-    players.forEach(function(player){
-
-
-        cards += `
-
-        <div class="card">
-
-        <h3>${player.name}</h3>
-
-        <p>Role: ${player.role}</p>
-
-        <p>Batting: ${player.batting}</p>
-
-        <p>Bowling: ${player.bowling}</p>
-
-        <p>Fielding: ${player.fielding}</p>
-
-        <button onclick="selectPlayer('${player.name}')">
-        SELECT
-        </button>
-
-        </div>
-
-        `;
-
-
-    });
-
-
-    document.getElementById("playerCards").innerHTML = cards;
-
-}
-
-
-
-function selectPlayer(name){
-
-
-    if(squad.includes(name)){
-
-        alert("You already picked this player!");
-
-        return;
-
-    }
-
-
-    squad.push(name);
-
-
-    document.getElementById("teamResult").innerHTML =
-    "Squad: " + squad.join(", ");
-
 
     document.getElementById("draftCount").innerHTML =
-    "Players: " + squad.length + "/11";
+        "Players: 0/11";
 
-
-    if(squad.length === 11){
-
-        alert("Your XI is complete!");
-
-    }
-
-}
-function randomTeam(){
-
-    let teams = Object.keys(countries);
-
-    selectedCountry = teams[Math.floor(Math.random() * teams.length)];
-
-    let eras = Object.keys(countries[selectedCountry]);
-
-    selectedEra = eras[Math.floor(Math.random() * eras.length)];
-
-
-    document.getElementById("teams").style.display = "none";
-    document.getElementById("era").style.display = "none";
-    document.getElementById("draft").style.display = "block";
-
+    document.getElementById("teamResult").innerHTML = "";
 
     loadPlayers();
-
 }
+
+
+// ===============================
+// LOAD PLAYERS
+// ===============================
+
+function loadPlayers() {
+
+    console.log(
+        "Loading players:",
+        selectedCountry,
+        selectedEra
+    );
+
+
+    // Check country
