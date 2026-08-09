@@ -112,7 +112,8 @@ function loadPlayers() {
 
     if (!country) {
 
-        document.getElementById("playerCards").innerHTML =
+        const pc = document.getElementById("playerCards");
+        if (pc) pc.innerHTML =
             "<p>No player data found for " +
             selectedCountry +
             ".</p>";
@@ -130,7 +131,8 @@ function loadPlayers() {
 
     if (!players) {
 
-        document.getElementById("playerCards").innerHTML =
+        const pc = document.getElementById("playerCards");
+        if (pc) pc.innerHTML =
             "<p>No players found for " +
             selectedCountry +
             " in the " +
@@ -147,39 +149,49 @@ function loadPlayers() {
     }
 
 
-    let cards = "";
+    const pc = document.getElementById("playerCards");
+    if (!pc) return;
 
+    // Clear existing cards
+    pc.innerHTML = "";
 
+    // Create DOM nodes so player names with quotes/apostrophes don't break onclick
     players.forEach(function(player) {
+        const card = document.createElement('div');
+        card.className = 'card';
 
-        // Use single quotes around the onclick attribute so JSON.stringify's
-        // double-quoted string is safe inside the attribute.
-        cards += `
+        const h3 = document.createElement('h3');
+        h3.textContent = player.name;
+        card.appendChild(h3);
 
-        <div class="card">
+        const roleP = document.createElement('p');
+        roleP.textContent = 'Role: ' + player.role;
+        card.appendChild(roleP);
 
-            <h3>${player.name}</h3>
+        const batP = document.createElement('p');
+        batP.textContent = 'Batting: ' + player.batting;
+        card.appendChild(batP);
 
-            <p>Role: ${player.role}</p>
+        const bowlP = document.createElement('p');
+        bowlP.textContent = 'Bowling: ' + player.bowling;
+        card.appendChild(bowlP);
 
-            <p>Batting: ${player.batting}</p>
+        const fieldP = document.createElement('p');
+        fieldP.textContent = 'Fielding: ' + player.fielding;
+        card.appendChild(fieldP);
 
-            <p>Bowling: ${player.bowling}</p>
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = 'SELECT';
+        // Use event listener so names with quotes/apostrophes are safe
+        btn.addEventListener('click', function() {
+            selectPlayer(player.name);
+        });
 
-            <p>Fielding: ${player.fielding}</p>
+        card.appendChild(btn);
 
-            <button onclick='selectPlayer(${JSON.stringify(player.name)})'>
-                SELECT
-            </button>
-
-        </div>
-
-        `;
-
+        pc.appendChild(card);
     });
-
-
-    document.getElementById("playerCards").innerHTML = cards;
 }
 
 
@@ -216,8 +228,8 @@ function selectPlayer(name) {
     // Add player and update UI
     squad.push(name);
 
-    document.getElementById("teamResult").innerHTML =
-        "Squad: " + squad.join(", ");
+    const trEl = document.getElementById("teamResult");
+    if (trEl) trEl.innerHTML = "Squad: " + squad.join(", ");
 
     // Immediately update the draft counter after a successful pick
     updateDraftCount();
@@ -237,8 +249,10 @@ function backFromDraft() {
     squad = [];
     selectedEra = "";
 
-    document.getElementById("draft").style.display = "none";
-    document.getElementById("era").style.display = "block";
+    const draftEl = document.getElementById("draft");
+    const eraEl = document.getElementById("era");
+    if (draftEl) draftEl.style.display = "none";
+    if (eraEl) eraEl.style.display = "block";
 
     // Clear player cards and results
     const pc = document.getElementById("playerCards");
@@ -254,8 +268,10 @@ function backFromEra() {
     squad = [];
     selectedEra = "";
 
-    document.getElementById("era").style.display = "none";
-    document.getElementById("teams").style.display = "block";
+    const eraEl = document.getElementById("era");
+    const teamsEl = document.getElementById("teams");
+    if (eraEl) eraEl.style.display = "none";
+    if (teamsEl) teamsEl.style.display = "block";
 
     // Clear draft related UI
     const pc = document.getElementById("playerCards");
@@ -276,8 +292,10 @@ function backFromTeams() {
     selectedEra = "";
     selectedCompetition = "";
 
-    document.getElementById("teams").style.display = "none";
-    document.getElementById("competition").style.display = "block";
+    const teamsEl = document.getElementById("teams");
+    const compEl = document.getElementById("competition");
+    if (teamsEl) teamsEl.style.display = "none";
+    if (compEl) compEl.style.display = "block";
 
     // Reset UI
     const pc = document.getElementById("playerCards");
@@ -334,21 +352,21 @@ function randomTeam() {
     squad = [];
 
 
-    document.getElementById("teams").style.display =
-        "none";
-
-    document.getElementById("era").style.display =
-        "none";
-
-    document.getElementById("draft").style.display =
-        "block";
+    const teamsEl = document.getElementById("teams");
+    const eraEl = document.getElementById("era");
+    const draftEl = document.getElementById("draft");
+    if (teamsEl) teamsEl.style.display = "none";
+    if (eraEl) eraEl.style.display = "none";
+    if (draftEl) draftEl.style.display = "block";
 
 
     updateDraftCount();
 
-    document.getElementById("teamResult").innerHTML =
-        "";
+    const tr = document.getElementById("teamResult");
+    if (tr) tr.innerHTML = "";
 
+    // Ensure Draft screen has Back button when using Random Team
+    ensureBackButton("draft", "backFromDraftBtn", "Back", backFromDraft);
 
     loadPlayers();
 }
@@ -370,6 +388,9 @@ function ensureBackButton(containerId, btnId, label, onClickHandler) {
     btn.className = "back-button";
     btn.type = "button";
     btn.textContent = label;
+    // Make sure the button is visible even if the container has custom styles
+    btn.style.display = 'inline-block';
+    btn.style.marginBottom = '8px';
     btn.addEventListener("click", function () {
         try {
             onClickHandler();
