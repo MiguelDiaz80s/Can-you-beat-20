@@ -183,6 +183,7 @@ function loadPlayers() {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.textContent = 'SELECT';
+        btn.className = 'select-button';
         // Use event listener so names with quotes/apostrophes are safe
         btn.addEventListener('click', function() {
             selectPlayer(player.name);
@@ -202,7 +203,8 @@ function loadPlayers() {
 function updateDraftCount() {
     const el = document.getElementById("draftCount");
     if (el) {
-        el.innerHTML = "Players: " + squad.length + "/11";
+        // Show as X/11 (e.g. 1/11, 2/11 ... 11/11) as requested
+        el.innerHTML = squad.length + "/11";
     }
 }
 
@@ -229,13 +231,20 @@ function selectPlayer(name) {
     squad.push(name);
 
     const trEl = document.getElementById("teamResult");
-    if (trEl) trEl.innerHTML = "Squad: " + squad.join(", ");
+    if (trEl) trEl.innerHTML = "Squad (" + squad.length + "/11): " + squad.join(", ");
 
     // Immediately update the draft counter after a successful pick
     updateDraftCount();
 
+    // If XI complete, notify and disable remaining select buttons
     if (squad.length === 11) {
         alert("Your XI is complete!");
+        // Disable all remaining SELECT buttons so user can't add more
+        const pc = document.getElementById("playerCards");
+        if (pc) {
+            const buttons = pc.querySelectorAll('.select-button');
+            buttons.forEach(function(b) { b.disabled = true; });
+        }
     }
 }
 
