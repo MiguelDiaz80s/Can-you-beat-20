@@ -1,3 +1,10 @@
+console.log('game.js loaded');
+
+// expose errors to console
+window.addEventListener('error', function(e){
+    console.error('window error:', e.error || e.message || e);
+});
+
 let selectedCountry = "";
 let selectedEra = "";
 let selectedCompetition = "";
@@ -937,4 +944,27 @@ function ensureBackButton(
         btn,
         container.firstChild
     );
+}
+
+// expose functions in case HTML uses inline onclick or script loaded as module
+window.startGame = startGame;
+window.chooseCompetition = chooseCompetition;
+window.pickTeam = pickTeam;
+window.chooseEra = chooseEra;
+window.randomTeam = randomTeam;
+window.selectPlayer = selectPlayer;
+window.restartXI = restartXI;
+window.backFromDraft = backFromDraft;
+window.backFromEra = backFromEra;
+window.backFromTeams = backFromTeams;
+
+// ensure initial UI state updates after DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded — init');
+        try { updateDraftCount(); } catch(e) {}
+    });
+} else {
+    console.log('DOM already loaded — init');
+    try { updateDraftCount(); } catch(e) {}
 }
