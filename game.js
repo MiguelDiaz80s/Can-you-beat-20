@@ -56,6 +56,7 @@ function pickTeam(team) {
 
     selectedCountry = team;
 
+    // Starting a new team should reset the squad
     squad = [];
 
     document.getElementById("teams").style.display = "none";
@@ -79,6 +80,7 @@ function chooseEra(era) {
 
     selectedEra = era;
 
+    // Starting a new era should reset the squad
     squad = [];
 
     document.getElementById("era").style.display = "none";
@@ -91,6 +93,8 @@ function chooseEra(era) {
 
     // Add Back button on Draft screen to return to Era
     ensureBackButton("draft", "backFromDraftBtn", "Back", backFromDraft);
+    // Add Restart XI button to clear current squad when the user wants
+    ensureBackButton("draft", "restartXIbtn", "Restart XI", restartXI);
 
     loadPlayers();
 }
@@ -152,7 +156,7 @@ function loadPlayers() {
     const pc = document.getElementById("playerCards");
     if (!pc) return;
 
-    // Clear existing cards
+    // Clear existing cards (we recreate them to reflect current squad state)
     pc.innerHTML = "";
 
     // Create DOM nodes so player names with quotes/apostrophes don't break onclick
@@ -188,6 +192,17 @@ function loadPlayers() {
         btn.addEventListener('click', function() {
             selectPlayer(player.name);
         });
+
+        // If this player is already in the squad, show as selected and disable button
+        if (squad.some(function(p) { return p === player.name; })) {
+            btn.disabled = true;
+            btn.textContent = 'SELECTED';
+        }
+
+        // If XI is already complete, disable all select buttons
+        if (squad.length >= 11) {
+            btn.disabled = true;
+        }
 
         card.appendChild(btn);
 
@@ -236,15 +251,55 @@ function selectPlayer(name) {
     // Immediately update the draft counter after a successful pick
     updateDraftCount();
 
-    // If XI complete, notify and disable remaining select buttons
+    // Update player buttons to reflect selected state
+    const pc = document.getElementById("playerCards");
+    if (pc) {
+        const buttons = pc.querySelectorAll('.select-button');
+        buttons.forEach(function(b) {
+            // Disable the button for the player we just added
+            // Match by the card's h3 text
+            const card = b.parentElement;
+            const nameEl = card ? card.querySelector('h3') : null;
+            const playerName = nameEl ? nameEl.textContent : '';
+            if (playerName === name) {
+                b.disabled = true;
+                b.textContent = 'SELECTED';
+            }
+            // If XI is complete, disable all remaining
+            if (squad.length >= 11) {
+                b.disabled = true;
+            }
+        });
+    }
+
+    // If XI complete, notify
     if (squad.length === 11) {
         alert("Your XI is complete!");
-        // Disable all remaining SELECT buttons so user can't add more
-        const pc = document.getElementById("playerCards");
-        if (pc) {
-            const buttons = pc.querySelectorAll('.select-button');
-            buttons.forEach(function(b) { b.disabled = true; });
-        }
+    }
+}
+
+
+// ===============================
+// RESTART XI
+// ===============================
+
+function restartXI() {
+    // Clear current squad and update UI
+    squad = [];
+
+    updateDraftCount();
+
+    const tr = document.getElementById("teamResult");
+    if (tr) tr.innerHTML = "";
+
+    // Re-enable all select buttons and reset labels
+    const pc = document.getElementById("playerCards");
+    if (pc) {
+        const buttons = pc.querySelectorAll('.select-button');
+        buttons.forEach(function(b) {
+            b.disabled = false;
+            b.textContent = 'SELECT';
+        });
     }
 }
 
@@ -255,7 +310,7 @@ function selectPlayer(name) {
 
 function backFromDraft() {
     // Going back from draft to era selection
-    squad = [];
+    // Preserve squad so user's picks aren't lost when navigating back
     selectedEra = "";
 
     const draftEl = document.getElementById("draft");
@@ -263,18 +318,13 @@ function backFromDraft() {
     if (draftEl) draftEl.style.display = "none";
     if (eraEl) eraEl.style.display = "block";
 
-    // Clear player cards and results
-    const pc = document.getElementById("playerCards");
-    if (pc) pc.innerHTML = "";
-    const tr = document.getElementById("teamResult");
-    if (tr) tr.innerHTML = "";
-
+    // Do NOT clear player cards or teamResult here so the squad is preserved when returning
     updateDraftCount();
 }
 
 function backFromEra() {
     // Going back from era to team selection
-    squad = [];
+    // Preserve squad so user's picks aren't lost when navigating back
     selectedEra = "";
 
     const eraEl = document.getElementById("era");
@@ -282,12 +332,7 @@ function backFromEra() {
     if (eraEl) eraEl.style.display = "none";
     if (teamsEl) teamsEl.style.display = "block";
 
-    // Clear draft related UI
-    const pc = document.getElementById("playerCards");
-    if (pc) pc.innerHTML = "";
-    const tr = document.getElementById("teamResult");
-    if (tr) tr.innerHTML = "";
-
+    // Do NOT clear draft related UI so squad remains when returning
     updateDraftCount();
 
     // Ensure Teams screen has a Back button (in case it was removed)
@@ -296,7 +341,7 @@ function backFromEra() {
 
 function backFromTeams() {
     // Going back from teams to competition selection
-    squad = [];
+    // Preserve squad so user's picks aren't lost when navigating back
     selectedCountry = "";
     selectedEra = "";
     selectedCompetition = "";
@@ -306,11 +351,7 @@ function backFromTeams() {
     if (teamsEl) teamsEl.style.display = "none";
     if (compEl) compEl.style.display = "block";
 
-    // Reset UI
-    const pc = document.getElementById("playerCards");
-    if (pc) pc.innerHTML = "";
-    const tr = document.getElementById("teamResult");
-    if (tr) tr.innerHTML = "";
+    // Do NOT clear playerCards or teamResult here
     const teamTitle = document.getElementById("teamTitle");
     if (teamTitle) teamTitle.innerHTML = "Choose Country";
 
@@ -358,6 +399,7 @@ function randomTeam() {
         eras[Math.floor(Math.random() * eras.length)];
 
 
+    // Starting a random team/era resets the squad
     squad = [];
 
 
@@ -376,6 +418,8 @@ function randomTeam() {
 
     // Ensure Draft screen has Back button when using Random Team
     ensureBackButton("draft", "backFromDraftBtn", "Back", backFromDraft);
+    // Ensure Restart XI button
+    ensureBackButton("draft", "restartXIbtn", "Restart XI", restartXI);
 
     loadPlayers();
 }
