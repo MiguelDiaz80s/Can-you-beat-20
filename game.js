@@ -14,7 +14,7 @@ let currentMatch = 1;
 let countries = {};
 
 if (typeof australia !== "undefined") {
-countries.Australia = australia;
+    countries.Australia = australia;
 }
 
 // ===============================
@@ -22,21 +22,17 @@ countries.Australia = australia;
 // ===============================
 
 function startGame(mode) {
+    document.getElementById("result").innerHTML =
+        mode + " cricket selected!";
 
-```
-document.getElementById("result").innerHTML =
-    mode + " cricket selected!";
+    document.getElementById("competition").style.display = "block";
 
-document.getElementById("competition").style.display = "block";
-
-ensureBackButton(
-    "competition",
-    "restartXIbtn",
-    "Restart XI",
-    restartXI
-);
-```
-
+    ensureBackButton(
+        "competition",
+        "restartXIbtn",
+        "Restart XI",
+        restartXI
+    );
 }
 
 // ===============================
@@ -44,31 +40,27 @@ ensureBackButton(
 // ===============================
 
 function chooseCompetition(comp) {
+    selectedCompetition = comp;
 
-```
-selectedCompetition = comp;
+    document.getElementById("competition").style.display = "none";
+    document.getElementById("teams").style.display = "block";
 
-document.getElementById("competition").style.display = "none";
-document.getElementById("teams").style.display = "block";
+    document.getElementById("teamTitle").innerHTML =
+        "Choose your " + comp + " team";
 
-document.getElementById("teamTitle").innerHTML =
-    "Choose your " + comp + " team";
+    ensureBackButton(
+        "teams",
+        "backFromTeamsBtn",
+        "Back",
+        backFromTeams
+    );
 
-ensureBackButton(
-    "teams",
-    "backFromTeamsBtn",
-    "Back",
-    backFromTeams
-);
-
-ensureBackButton(
-    "teams",
-    "restartXIbtn",
-    "Restart XI",
-    restartXI
-);
-```
-
+    ensureBackButton(
+        "teams",
+        "restartXIbtn",
+        "Restart XI",
+        restartXI
+    );
 }
 
 // ===============================
@@ -76,32 +68,28 @@ ensureBackButton(
 // ===============================
 
 function pickTeam(team) {
+    selectedCountry = team;
 
-```
-selectedCountry = team;
+    document.getElementById("teams").style.display = "none";
+    document.getElementById("era").style.display = "block";
 
-document.getElementById("teams").style.display = "none";
-document.getElementById("era").style.display = "block";
+    updateDraftCount();
 
-updateDraftCount();
+    document.getElementById("teamResult").innerHTML = "";
 
-document.getElementById("teamResult").innerHTML = "";
+    ensureBackButton(
+        "era",
+        "backFromEraBtn",
+        "Back",
+        backFromEra
+    );
 
-ensureBackButton(
-    "era",
-    "backFromEraBtn",
-    "Back",
-    backFromEra
-);
-
-ensureBackButton(
-    "era",
-    "restartXIbtn",
-    "Restart XI",
-    restartXI
-);
-```
-
+    ensureBackButton(
+        "era",
+        "restartXIbtn",
+        "Restart XI",
+        restartXI
+    );
 }
 
 // ===============================
@@ -109,34 +97,30 @@ ensureBackButton(
 // ===============================
 
 function chooseEra(era) {
+    selectedEra = era;
 
-```
-selectedEra = era;
+    document.getElementById("era").style.display = "none";
+    document.getElementById("draft").style.display = "block";
 
-document.getElementById("era").style.display = "none";
-document.getElementById("draft").style.display = "block";
+    updateDraftCount();
 
-updateDraftCount();
+    document.getElementById("teamResult").innerHTML = "";
 
-document.getElementById("teamResult").innerHTML = "";
+    ensureBackButton(
+        "draft",
+        "backFromDraftBtn",
+        "Back",
+        backFromDraft
+    );
 
-ensureBackButton(
-    "draft",
-    "backFromDraftBtn",
-    "Back",
-    backFromDraft
-);
+    ensureBackButton(
+        "draft",
+        "restartXIbtn",
+        "Restart XI",
+        restartXI
+    );
 
-ensureBackButton(
-    "draft",
-    "restartXIbtn",
-    "Restart XI",
-    restartXI
-);
-
-loadPlayers();
-```
-
+    loadPlayers();
 }
 
 // ===============================
@@ -144,108 +128,104 @@ loadPlayers();
 // ===============================
 
 function loadPlayers() {
+    console.log(
+        "Loading players:",
+        selectedCountry,
+        selectedEra
+    );
 
-```
-console.log(
-    "Loading players:",
-    selectedCountry,
-    selectedEra
-);
+    let country = countries[selectedCountry];
 
-let country = countries[selectedCountry];
+    if (!country) {
 
-if (!country) {
+        const pc = document.getElementById("playerCards");
+
+        if (pc) {
+            pc.innerHTML =
+                "<p>No player data found for " +
+                selectedCountry +
+                ".</p>";
+        }
+
+        return;
+    }
+
+    let players = country[selectedEra];
+
+    if (!players) {
+
+        const pc = document.getElementById("playerCards");
+
+        if (pc) {
+            pc.innerHTML =
+                "<p>No players found for " +
+                selectedCountry +
+                " in the " +
+                selectedEra +
+                ".</p>";
+        }
+
+        return;
+    }
 
     const pc = document.getElementById("playerCards");
 
-    if (pc) {
-        pc.innerHTML =
-            "<p>No player data found for " +
-            selectedCountry +
-            ".</p>";
-    }
+    if (!pc) return;
 
-    return;
-}
+    pc.innerHTML = "";
 
-let players = country[selectedEra];
+    players.forEach(function(player) {
 
-if (!players) {
+        const card = document.createElement("div");
+        card.className = "card";
 
-    const pc = document.getElementById("playerCards");
+        const h3 = document.createElement("h3");
+        h3.textContent = player.name;
+        card.appendChild(h3);
 
-    if (pc) {
-        pc.innerHTML =
-            "<p>No players found for " +
-            selectedCountry +
-            " in the " +
-            selectedEra +
-            ".</p>";
-    }
+        const roleP = document.createElement("p");
+        roleP.textContent = "Role: " + player.role;
+        card.appendChild(roleP);
 
-    return;
-}
+        const batP = document.createElement("p");
+        batP.textContent = "Batting: " + player.batting;
+        card.appendChild(batP);
 
-const pc = document.getElementById("playerCards");
+        const bowlP = document.createElement("p");
+        bowlP.textContent = "Bowling: " + player.bowling;
+        card.appendChild(bowlP);
 
-if (!pc) return;
+        const fieldP = document.createElement("p");
+        fieldP.textContent = "Fielding: " + player.fielding;
+        card.appendChild(fieldP);
 
-pc.innerHTML = "";
+        const btn = document.createElement("button");
 
-players.forEach(function(player) {
+        btn.type = "button";
+        btn.textContent = "SELECT";
+        btn.className = "select-button";
 
-    const card = document.createElement("div");
-    card.className = "card";
+        btn.addEventListener("click", function() {
+            selectPlayer(player.name);
+        });
 
-    const h3 = document.createElement("h3");
-    h3.textContent = player.name;
-    card.appendChild(h3);
+        if (
+            squad.some(function(p) {
+                return p === player.name;
+            })
+        ) {
+            btn.disabled = true;
+            btn.textContent = "SELECTED";
+        }
 
-    const roleP = document.createElement("p");
-    roleP.textContent = "Role: " + player.role;
-    card.appendChild(roleP);
+        if (squad.length >= 11) {
+            btn.disabled = true;
+        }
 
-    const batP = document.createElement("p");
-    batP.textContent = "Batting: " + player.batting;
-    card.appendChild(batP);
+        card.appendChild(btn);
 
-    const bowlP = document.createElement("p");
-    bowlP.textContent = "Bowling: " + player.bowling;
-    card.appendChild(bowlP);
-
-    const fieldP = document.createElement("p");
-    fieldP.textContent = "Fielding: " + player.fielding;
-    card.appendChild(fieldP);
-
-    const btn = document.createElement("button");
-
-    btn.type = "button";
-    btn.textContent = "SELECT";
-    btn.className = "select-button";
-
-    btn.addEventListener("click", function() {
-        selectPlayer(player.name);
+        pc.appendChild(card);
     });
-
-    if (
-        squad.some(function(p) {
-            return p === player.name;
-        })
-    ) {
-        btn.disabled = true;
-        btn.textContent = "SELECTED";
-    }
-
-    if (squad.length >= 11) {
-        btn.disabled = true;
-    }
-
-    card.appendChild(btn);
-
-    pc.appendChild(card);
-});
-```
-
 }
 
 // ===============================
@@ -253,15 +233,11 @@ players.forEach(function(player) {
 // ===============================
 
 function updateDraftCount() {
+    const el = document.getElementById("draftCount");
 
-```
-const el = document.getElementById("draftCount");
-
-if (el) {
-    el.innerHTML = squad.length + "/11";
-}
-```
-
+    if (el) {
+        el.innerHTML = squad.length + "/11";
+    }
 }
 
 // ===============================
@@ -269,84 +245,74 @@ if (el) {
 // ===============================
 
 function selectPlayer(name) {
+    if (squad.length >= 11) {
+        alert("Your XI is already complete!");
+        return;
+    }
 
-```
-if (squad.length >= 11) {
+    if (
+        squad.some(function(p) {
+            return p === name;
+        })
+    ) {
+        alert("You already picked this player!");
+        return;
+    }
 
-    alert("Your XI is already complete!");
+    squad.push(name);
 
-    return;
-}
+    const trEl = document.getElementById("teamResult");
 
-if (
-    squad.some(function(p) {
-        return p === name;
-    })
-) {
+    if (trEl) {
+        trEl.innerHTML =
+            "Squad (" +
+            squad.length +
+            "/11): " +
+            squad.join(", ");
+    }
 
-    alert("You already picked this player!");
+    updateDraftCount();
 
-    return;
-}
+    const pc = document.getElementById("playerCards");
 
-squad.push(name);
+    if (pc) {
 
-const trEl = document.getElementById("teamResult");
+        const buttons =
+            pc.querySelectorAll(".select-button");
 
-if (trEl) {
-    trEl.innerHTML =
-        "Squad (" +
-        squad.length +
-        "/11): " +
-        squad.join(", ");
-}
+        buttons.forEach(function(b) {
 
-updateDraftCount();
+            const card = b.parentElement;
 
-const pc = document.getElementById("playerCards");
+            const nameEl =
+                card ?
+                card.querySelector("h3") :
+                null;
 
-if (pc) {
+            const playerName =
+                nameEl ?
+                nameEl.textContent :
+                "";
 
-    const buttons =
-        pc.querySelectorAll(".select-button");
+            if (playerName === name) {
 
-    buttons.forEach(function(b) {
+                b.disabled = true;
+                b.textContent = "SELECTED";
+            }
 
-        const card = b.parentElement;
+            if (squad.length >= 11) {
+                b.disabled = true;
+            }
+        });
+    }
 
-        const nameEl =
-            card ?
-            card.querySelector("h3") :
-            null;
+    // ===============================
+    // XI COMPLETE
+    // ===============================
 
-        const playerName =
-            nameEl ?
-            nameEl.textContent :
-            "";
-
-        if (playerName === name) {
-
-            b.disabled = true;
-            b.textContent = "SELECTED";
-        }
-
-        if (squad.length >= 11) {
-            b.disabled = true;
-        }
-    });
-}
-
-
-// ===============================
-// XI COMPLETE
-// ===============================
-
-if (squad.length === 11) {
-
-    showMatchScreen();
-}
-```
-
+    if (squad.length === 11) {
+        showMatchScreen();
+    }
 }
 
 // ===============================
@@ -354,91 +320,86 @@ if (squad.length === 11) {
 // ===============================
 
 function showMatchScreen() {
+    const draft = document.getElementById("draft");
 
-```
-const draft = document.getElementById("draft");
+    if (draft) {
+        draft.style.display = "none";
+    }
 
-if (draft) {
-    draft.style.display = "none";
-}
+    let oldResults =
+        document.getElementById("matchResults");
 
-let oldResults =
-    document.getElementById("matchResults");
+    if (oldResults) {
+        oldResults.remove();
+    }
 
-if (oldResults) {
-    oldResults.remove();
-}
+    const results = document.createElement("div");
 
+    results.id = "matchResults";
 
-const results = document.createElement("div");
-
-results.id = "matchResults";
-
-results.className = "card";
+    results.className = "card";
 
 
-results.innerHTML = `
+    results.innerHTML = `
 
-    <h2>🏏 MATCH ${currentMatch}</h2>
+        <h2>🏏 MATCH ${currentMatch}</h2>
 
-    <h3>
-    ${selectedCountry}
-    </h3>
+        <h3>
+        ${selectedCountry}
+        </h3>
 
-    <p>
-    ${selectedCompetition}
-    </p>
+        <p>
+        ${selectedCompetition}
+        </p>
 
-    <p>
-    Your XI is ready.
-    </p>
+        <p>
+        Your XI is ready.
+        </p>
 
-    <p>
-    ${wins} wins • ${losses} losses
-    </p>
+        <p>
+        ${wins} wins • ${losses} losses
+        </p>
 
-    <button id="skipResultsButton">
-        SKIP TO RESULTS
-    </button>
+        <button id="skipResultsButton">
+            SKIP TO RESULTS
+        </button>
 
-    <br><br>
+        <br><br>
 
-    <button id="backToSquadButton">
-        BACK TO SQUAD
-    </button>
+        <button id="backToSquadButton">
+            BACK TO SQUAD
+        </button>
 
-`;
-
-
-document.body.appendChild(results);
+    `;
 
 
-document
-    .getElementById("skipResultsButton")
-    .addEventListener(
-        "click",
-        function() {
-            showMatchResult();
-        }
-    );
+    document.body.appendChild(results);
 
 
-document
-    .getElementById("backToSquadButton")
-    .addEventListener(
-        "click",
-        function() {
-
-            results.remove();
-
-            if (draft) {
-                draft.style.display = "block";
+    document
+        .getElementById("skipResultsButton")
+        .addEventListener(
+            "click",
+            function() {
+                showMatchResult();
             }
+        );
 
-        }
-    );
-```
 
+    document
+        .getElementById("backToSquadButton")
+        .addEventListener(
+            "click",
+            function() {
+
+                results.remove();
+
+                if (draft) {
+                    draft.style.display = "block";
+                }
+
+            }
+        );
 }
 
 // ===============================
@@ -446,204 +407,200 @@ document
 // ===============================
 
 function showMatchResult() {
+    const results =
+        document.getElementById("matchResults");
 
-```
-const results =
-    document.getElementById("matchResults");
-
-if (!results) return;
+    if (!results) return;
 
 
-// Random match result
-const won =
-    Math.random() < 0.70;
+    // Random match result
+    const won =
+        Math.random() < 0.70;
 
 
-let yourRuns;
-let opponentRuns;
+    let yourRuns;
+    let opponentRuns;
 
 
-if (won) {
+    if (won) {
 
-    yourRuns =
-        Math.floor(
-            Math.random() * 100
-        ) + 140;
+        yourRuns =
+            Math.floor(
+                Math.random() * 100
+            ) + 140;
 
-    opponentRuns =
-        Math.floor(
-            Math.random() * 100
-        ) + 70;
+        opponentRuns =
+            Math.floor(
+                Math.random() * 100
+            ) + 70;
 
-    if (opponentRuns >= yourRuns) {
-        opponentRuns = yourRuns - 8;
+        if (opponentRuns >= yourRuns) {
+            opponentRuns = yourRuns - 8;
+        }
+
+        wins++;
+
+    } else {
+
+        opponentRuns =
+            Math.floor(
+                Math.random() * 100
+            ) + 140;
+
+        yourRuns =
+            Math.floor(
+                Math.random() * 100
+            ) + 70;
+
+        if (yourRuns >= opponentRuns) {
+            yourRuns = opponentRuns - 8;
+        }
+
+        losses++;
     }
 
-    wins++;
 
-} else {
-
-    opponentRuns =
-        Math.floor(
-            Math.random() * 100
-        ) + 140;
-
-    yourRuns =
-        Math.floor(
-            Math.random() * 100
-        ) + 70;
-
-    if (yourRuns >= opponentRuns) {
-        yourRuns = opponentRuns - 8;
-    }
-
-    losses++;
-}
-
-
-const margin =
-    Math.abs(
-        yourRuns -
-        opponentRuns
-    );
-
-
-let resultText;
-
-if (won) {
-
-    resultText =
-        "🏆 YOU WIN!";
-
-} else {
-
-    resultText =
-        "❌ YOU LOSE!";
-}
-
-
-results.innerHTML = `
-
-    <h2>${resultText}</h2>
-
-    <h3>
-    ${selectedCountry}
-    ${yourRuns}/${Math.floor(Math.random() * 4)}
-    </h3>
-
-    <h3>
-    Opponent
-    ${opponentRuns}/${Math.floor(Math.random() * 10)}
-    </h3>
-
-    <p>
-    ${won
-        ? "Won by " + margin + " runs"
-        : "Lost by " + margin + " runs"}
-    </p>
-
-    <hr>
-
-    <h3>
-    🏆 Wins: ${wins}
-    </h3>
-
-    <h3>
-    ❌ Losses: ${losses}
-    </h3>
-
-    <h3>
-    Progress: ${wins}/20 wins
-    </h3>
-
-    <br>
-
-    ${
-        won && wins >= 20
-        ?
-        `<button id="championButton">
-            🏆 YOU BEAT 20!
-        </button>`
-        :
-        `<button id="nextMatchButton">
-            NEXT MATCH
-        </button>
-        <br><br>
-        <button id="changeTeamButton">
-            CHANGE TEAM
-        </button>`
-    }
-
-`;
-
-
-if (won && wins >= 20) {
-
-    document
-        .getElementById("championButton")
-        .addEventListener(
-            "click",
-            function() {
-
-                alert(
-                    "🏆 YOU BEAT 20 MATCHES!"
-                );
-
-            }
-        );
-
-} else {
-
-    document
-        .getElementById("nextMatchButton")
-        .addEventListener(
-            "click",
-            function() {
-
-                currentMatch++;
-
-                showMatchScreen();
-
-            }
+    const margin =
+        Math.abs(
+            yourRuns -
+            opponentRuns
         );
 
 
-    document
-        .getElementById("changeTeamButton")
-        .addEventListener(
-            "click",
-            function() {
+    let resultText;
 
-                results.remove();
+    if (won) {
 
-                squad = [];
+        resultText =
+            "🏆 YOU WIN!";
 
-                updateDraftCount();
+    } else {
 
-                document.getElementById(
-                    "teams"
-                ).style.display = "block";
+        resultText =
+            "❌ YOU LOSE!";
+    }
 
-                document.getElementById(
-                    "draft"
-                ).style.display = "none";
 
-                document.getElementById(
-                    "era"
-                ).style.display = "none";
+    results.innerHTML = `
 
-                ensureBackButton(
-                    "teams",
-                    "backFromTeamsBtn",
-                    "Back",
-                    backFromTeams
-                );
+        <h2>${resultText}</h2>
 
-            }
-        );
-}
-```
+        <h3>
+        ${selectedCountry}
+        ${yourRuns}/${Math.floor(Math.random() * 4)}
+        </h3>
 
+        <h3>
+        Opponent
+        ${opponentRuns}/${Math.floor(Math.random() * 10)}
+        </h3>
+
+        <p>
+        ${won
+            ? "Won by " + margin + " runs"
+            : "Lost by " + margin + " runs"}
+        </p>
+
+        <hr>
+
+        <h3>
+        🏆 Wins: ${wins}
+        </h3>
+
+        <h3>
+        ❌ Losses: ${losses}
+        </h3>
+
+        <h3>
+        Progress: ${wins}/20 wins
+        </h3>
+
+        <br>
+
+        ${
+            won && wins >= 20
+            ?
+            `<button id="championButton">
+                🏆 YOU BEAT 20!
+            </button>`
+            :
+            `<button id="nextMatchButton">
+                NEXT MATCH
+            </button>
+            <br><br>
+            <button id="changeTeamButton">
+                CHANGE TEAM
+            </button>`
+        }
+
+    `;
+
+
+    if (won && wins >= 20) {
+
+        document
+            .getElementById("championButton")
+            .addEventListener(
+                "click",
+                function() {
+
+                    alert(
+                        "🏆 YOU BEAT 20 MATCHES!"
+                    );
+
+                }
+            );
+
+    } else {
+
+        document
+            .getElementById("nextMatchButton")
+            .addEventListener(
+                "click",
+                function() {
+
+                    currentMatch++;
+
+                    showMatchScreen();
+
+                }
+            );
+
+
+        document
+            .getElementById("changeTeamButton")
+            .addEventListener(
+                "click",
+                function() {
+
+                    results.remove();
+
+                    squad = [];
+
+                    updateDraftCount();
+
+                    document.getElementById(
+                        "teams"
+                    ).style.display = "block";
+
+                    document.getElementById(
+                        "draft"
+                    ).style.display = "none";
+
+                    document.getElementById(
+                        "era"
+                    ).style.display = "none";
+
+                    ensureBackButton(
+                        "teams",
+                        "backFromTeamsBtn",
+                        "Back",
+                        backFromTeams
+                    );
+
+                }
+            );
+    }
 }
 
 // ===============================
@@ -651,58 +608,54 @@ if (won && wins >= 20) {
 // ===============================
 
 function restartXI() {
+    if (
+        !confirm(
+            "Are you sure you want to restart your XI? All selected players will be removed."
+        )
+    ) {
+        return;
+    }
 
-```
-if (
-    !confirm(
-        "Are you sure you want to restart your XI? All selected players will be removed."
-    )
-) {
-    return;
-}
+    squad = [];
 
-squad = [];
+    updateDraftCount();
 
-updateDraftCount();
+    const tr =
+        document.getElementById("teamResult");
 
-const tr =
-    document.getElementById("teamResult");
+    if (tr) {
+        tr.innerHTML = "";
+    }
 
-if (tr) {
-    tr.innerHTML = "";
-}
+    const pc =
+        document.getElementById("playerCards");
 
-const pc =
-    document.getElementById("playerCards");
+    if (pc) {
 
-if (pc) {
+        const buttons =
+            pc.querySelectorAll(".select-button");
 
-    const buttons =
-        pc.querySelectorAll(".select-button");
+        buttons.forEach(function(b) {
 
-    buttons.forEach(function(b) {
+            b.disabled = false;
+            b.textContent = "SELECT";
 
-        b.disabled = false;
-        b.textContent = "SELECT";
+        });
+    }
 
-    });
-}
+    const results =
+        document.getElementById("matchResults");
 
-const results =
-    document.getElementById("matchResults");
+    if (results) {
+        results.remove();
+    }
 
-if (results) {
-    results.remove();
-}
+    const draft =
+        document.getElementById("draft");
 
-const draft =
-    document.getElementById("draft");
-
-if (draft) {
-    draft.style.display = "block";
-}
-```
-
+    if (draft) {
+        draft.style.display = "block";
+    }
 }
 
 // ===============================
@@ -710,106 +663,94 @@ if (draft) {
 // ===============================
 
 function backFromDraft() {
+    selectedEra = "";
 
-```
-selectedEra = "";
+    const draftEl =
+        document.getElementById("draft");
 
-const draftEl =
-    document.getElementById("draft");
+    const eraEl =
+        document.getElementById("era");
 
-const eraEl =
-    document.getElementById("era");
+    if (draftEl) {
+        draftEl.style.display = "none";
+    }
 
-if (draftEl) {
-    draftEl.style.display = "none";
-}
+    if (eraEl) {
+        eraEl.style.display = "block";
+    }
 
-if (eraEl) {
-    eraEl.style.display = "block";
-}
-
-updateDraftCount();
-```
-
+    updateDraftCount();
 }
 
 function backFromEra() {
+    selectedEra = "";
 
-```
-selectedEra = "";
+    const eraEl =
+        document.getElementById("era");
 
-const eraEl =
-    document.getElementById("era");
+    const teamsEl =
+        document.getElementById("teams");
 
-const teamsEl =
-    document.getElementById("teams");
+    if (eraEl) {
+        eraEl.style.display = "none";
+    }
 
-if (eraEl) {
-    eraEl.style.display = "none";
-}
+    if (teamsEl) {
+        teamsEl.style.display = "block";
+    }
 
-if (teamsEl) {
-    teamsEl.style.display = "block";
-}
+    updateDraftCount();
 
-updateDraftCount();
+    ensureBackButton(
+        "teams",
+        "backFromTeamsBtn",
+        "Back",
+        backFromTeams
+    );
 
-ensureBackButton(
-    "teams",
-    "backFromTeamsBtn",
-    "Back",
-    backFromTeams
-);
-
-ensureBackButton(
-    "teams",
-    "restartXIbtn",
-    "Restart XI",
-    restartXI
-);
-```
-
+    ensureBackButton(
+        "teams",
+        "restartXIbtn",
+        "Restart XI",
+        restartXI
+    );
 }
 
 function backFromTeams() {
+    selectedCountry = "";
+    selectedEra = "";
+    selectedCompetition = "";
 
-```
-selectedCountry = "";
-selectedEra = "";
-selectedCompetition = "";
+    const teamsEl =
+        document.getElementById("teams");
 
-const teamsEl =
-    document.getElementById("teams");
+    const compEl =
+        document.getElementById("competition");
 
-const compEl =
-    document.getElementById("competition");
+    if (teamsEl) {
+        teamsEl.style.display = "none";
+    }
 
-if (teamsEl) {
-    teamsEl.style.display = "none";
-}
+    if (compEl) {
+        compEl.style.display = "block";
+    }
 
-if (compEl) {
-    compEl.style.display = "block";
-}
+    const teamTitle =
+        document.getElementById("teamTitle");
 
-const teamTitle =
-    document.getElementById("teamTitle");
+    if (teamTitle) {
+        teamTitle.innerHTML =
+            "Choose Country";
+    }
 
-if (teamTitle) {
-    teamTitle.innerHTML =
-        "Choose Country";
-}
+    updateDraftCount();
 
-updateDraftCount();
-
-ensureBackButton(
-    "competition",
-    "restartXIbtn",
-    "Restart XI",
-    restartXI
-);
-```
-
+    ensureBackButton(
+        "competition",
+        "restartXIbtn",
+        "Restart XI",
+        restartXI
+    );
 }
 
 // ===============================
@@ -817,111 +758,107 @@ ensureBackButton(
 // ===============================
 
 function randomTeam() {
-
-```
-let teams =
-    Object.keys(countries);
+    let teams =
+        Object.keys(countries);
 
 
-if (teams.length === 0) {
+    if (teams.length === 0) {
 
-    alert(
-        "No teams are connected yet."
+        alert(
+            "No teams are connected yet."
+        );
+
+        return;
+    }
+
+
+    selectedCountry =
+        teams[
+            Math.floor(
+                Math.random() *
+                teams.length
+            )
+        ];
+
+
+    let eras =
+        Object.keys(
+            countries[selectedCountry]
+        );
+
+
+    if (eras.length === 0) {
+
+        alert(
+            "No eras found for " +
+            selectedCountry
+        );
+
+        return;
+    }
+
+
+    selectedEra =
+        eras[
+            Math.floor(
+                Math.random() *
+                eras.length
+            )
+        ];
+
+
+    squad = [];
+
+    const teamsEl =
+        document.getElementById("teams");
+
+    const eraEl =
+        document.getElementById("era");
+
+    const draftEl =
+        document.getElementById("draft");
+
+
+    if (teamsEl) {
+        teamsEl.style.display = "none";
+    }
+
+    if (eraEl) {
+        eraEl.style.display = "none";
+    }
+
+    if (draftEl) {
+        draftEl.style.display = "block";
+    }
+
+
+    updateDraftCount();
+
+
+    const tr =
+        document.getElementById("teamResult");
+
+    if (tr) {
+        tr.innerHTML = "";
+    }
+
+
+    ensureBackButton(
+        "draft",
+        "backFromDraftBtn",
+        "Back",
+        backFromDraft
     );
 
-    return;
-}
-
-
-selectedCountry =
-    teams[
-        Math.floor(
-            Math.random() *
-            teams.length
-        )
-    ];
-
-
-let eras =
-    Object.keys(
-        countries[selectedCountry]
+    ensureBackButton(
+        "draft",
+        "restartXIbtn",
+        "Restart XI",
+        restartXI
     );
 
 
-if (eras.length === 0) {
-
-    alert(
-        "No eras found for " +
-        selectedCountry
-    );
-
-    return;
-}
-
-
-selectedEra =
-    eras[
-        Math.floor(
-            Math.random() *
-            eras.length
-        )
-    ];
-
-
-squad = [];
-
-const teamsEl =
-    document.getElementById("teams");
-
-const eraEl =
-    document.getElementById("era");
-
-const draftEl =
-    document.getElementById("draft");
-
-
-if (teamsEl) {
-    teamsEl.style.display = "none";
-}
-
-if (eraEl) {
-    eraEl.style.display = "none";
-}
-
-if (draftEl) {
-    draftEl.style.display = "block";
-}
-
-
-updateDraftCount();
-
-
-const tr =
-    document.getElementById("teamResult");
-
-if (tr) {
-    tr.innerHTML = "";
-}
-
-
-ensureBackButton(
-    "draft",
-    "backFromDraftBtn",
-    "Back",
-    backFromDraft
-);
-
-ensureBackButton(
-    "draft",
-    "restartXIbtn",
-    "Restart XI",
-    restartXI
-);
-
-
-loadPlayers();
-```
-
+    loadPlayers();
 }
 
 // ===============================
@@ -929,79 +866,75 @@ loadPlayers();
 // ===============================
 
 function ensureBackButton(
-containerId,
-btnId,
-label,
-onClickHandler
+    containerId,
+    btnId,
+    label,
+    onClickHandler
 ) {
+    const container =
+        document.getElementById(
+            containerId
+        );
 
-```
-const container =
-    document.getElementById(
-        containerId
-    );
-
-if (!container) return;
+    if (!container) return;
 
 
-if (
-    document.getElementById(
-        btnId
-    )
-) {
-    return;
-}
+    if (
+        document.getElementById(
+            btnId
+        )
+    ) {
+        return;
+    }
 
 
-const btn =
-    document.createElement(
-        "button"
-    );
+    const btn =
+        document.createElement(
+            "button"
+        );
 
 
-btn.id = btnId;
+    btn.id = btnId;
 
-btn.className =
-    "back-button";
+    btn.className =
+        "back-button";
 
-btn.type =
-    "button";
+    btn.type =
+        "button";
 
-btn.textContent =
-    label;
+    btn.textContent =
+        label;
 
-btn.style.display =
-    "inline-block";
+    btn.style.display =
+        "inline-block";
 
-btn.style.marginBottom =
-    "8px";
+    btn.style.marginBottom =
+        "8px";
 
 
-btn.addEventListener(
-    "click",
-    function() {
+    btn.addEventListener(
+        "click",
+        function() {
 
-        try {
+            try {
 
-            onClickHandler();
+                onClickHandler();
 
-        } catch (e) {
+            } catch (e) {
 
-            console.error(
-                "Button failed:",
-                e
-            );
+                console.error(
+                    "Button failed:",
+                    e
+                );
+
+            }
 
         }
-
-    }
-);
+    );
 
 
-container.insertBefore(
-    btn,
-    container.firstChild
-);
-```
-
+    container.insertBefore(
+        btn,
+        container.firstChild
+    );
 }
