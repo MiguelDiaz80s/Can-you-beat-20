@@ -25,6 +25,9 @@ function startGame(mode) {
         mode + " cricket selected!";
 
     document.getElementById("competition").style.display = "block";
+
+    // Add Restart XI button on Competition screen
+    ensureBackButton("competition", "restartXIbtn", "Restart XI", restartXI);
 }
 
 
@@ -45,6 +48,9 @@ function chooseCompetition(comp) {
 
     // Ensure Teams screen has a Back button to go back to competition
     ensureBackButton("teams", "backFromTeamsBtn", "Back", backFromTeams);
+
+    // Add Restart XI button on Teams screen
+    ensureBackButton("teams", "restartXIbtn", "Restart XI", restartXI);
 }
 
 
@@ -56,8 +62,7 @@ function pickTeam(team) {
 
     selectedCountry = team;
 
-    // Starting a new team should reset the squad
-    squad = [];
+    // Do NOT reset squad when picking a new team - preserve it for multi-selection
 
     document.getElementById("teams").style.display = "none";
 
@@ -69,6 +74,9 @@ function pickTeam(team) {
 
     // Add Back button on Era screen to return to Teams
     ensureBackButton("era", "backFromEraBtn", "Back", backFromEra);
+
+    // Add Restart XI button on Era screen
+    ensureBackButton("era", "restartXIbtn", "Restart XI", restartXI);
 }
 
 
@@ -80,8 +88,7 @@ function chooseEra(era) {
 
     selectedEra = era;
 
-    // Starting a new era should reset the squad
-    squad = [];
+    // Do NOT reset squad when choosing a new era - preserve it for multi-selection
 
     document.getElementById("era").style.display = "none";
 
@@ -284,6 +291,11 @@ function selectPlayer(name) {
 // ===============================
 
 function restartXI() {
+    // Ask for confirmation before clearing the squad
+    if (!confirm("Are you sure you want to restart your XI? All selected players will be removed.")) {
+        return;
+    }
+
     // Clear current squad and update UI
     squad = [];
 
@@ -337,6 +349,9 @@ function backFromEra() {
 
     // Ensure Teams screen has a Back button (in case it was removed)
     ensureBackButton("teams", "backFromTeamsBtn", "Back", backFromTeams);
+
+    // Ensure Restart XI button on Teams screen
+    ensureBackButton("teams", "restartXIbtn", "Restart XI", restartXI);
 }
 
 function backFromTeams() {
@@ -356,6 +371,9 @@ function backFromTeams() {
     if (teamTitle) teamTitle.innerHTML = "Choose Country";
 
     updateDraftCount();
+
+    // Ensure Restart XI button on Competition screen
+    ensureBackButton("competition", "restartXIbtn", "Restart XI", restartXI);
 }
 
 
