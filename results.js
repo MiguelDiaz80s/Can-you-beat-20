@@ -2,6 +2,8 @@
 // CAN YOU BEAT 20 - RESULTS SYSTEM
 // ==========================================
 
+const TARGET_WINS = 20;
+
 let currentMatch = 1;
 let wins = 0;
 let draws = 0;
@@ -10,7 +12,7 @@ let matchHistory = [];
 
 
 // ==========================================
-// START 20-GAME SEASON
+// START 20-GAME SEASON (now: run until 20 wins)
 // ==========================================
 
 function startSeason() {
@@ -77,10 +79,8 @@ function generateMatch() {
 
     // Don't play yourself
     if (opponent === teamName) {
-
         opponent =
             opponents[Math.floor(Math.random() * opponents.length)];
-
     }
 
 
@@ -147,34 +147,42 @@ function generateMatch() {
 
 function playNextGame() {
 
-    if (currentMatch > 20) {
+    // If we've already reached the target wins, show final results
+    if (wins >= TARGET_WINS) {
         showFinalResults();
         return;
     }
 
-
     let match = generateMatch();
 
     showResult(match);
+
+    // If this match reached the target wins, show final results immediately
+    if (wins >= TARGET_WINS) {
+        showFinalResults();
+        return;
+    }
 
     currentMatch++;
 }
 
 
 // ==========================================
-// SKIP TO RESULT
+// SKIP TO RESULT (play until TARGET_WINS)
 // ==========================================
 
 function skipToResult() {
 
-    while (currentMatch <= 20) {
+    // Loop until we reach the required wins
+    // Add a safety cap to avoid infinite loops
+    const SAFETY_CAP = 10000;
+    while (wins < TARGET_WINS && matchHistory.length < SAFETY_CAP) {
 
         generateMatch();
 
         currentMatch++;
 
     }
-
 
     showFinalResults();
 }
@@ -190,12 +198,11 @@ function showMatchScreen() {
 
     if (!result) return;
 
-
     result.innerHTML = `
 
         <div class="card">
 
-            <h2>🏏 Game ${currentMatch}/20</h2>
+            <h2>🏏 Game ${currentMatch} — Wins ${wins}/${TARGET_WINS}</h2>
 
             <p>
                 ${selectedCountry || "Your Team"}
@@ -279,7 +286,7 @@ function showResult(match) {
             </p>
 
             ${
-                currentMatch <= 20
+                wins < TARGET_WINS
                 ? `
                     <button onclick="playNextGame()">
                         ▶ Play Next Game
@@ -312,29 +319,24 @@ function showFinalResults() {
 
     if (!result) return;
 
+    const totalGames = matchHistory.length;
 
     let finalMessage = "";
 
-
-    if (
-        wins === 20 &&
-        draws === 0 &&
-        losses === 0
-    ) {
+    if (wins >= TARGET_WINS) {
 
         finalMessage = `
-            <h2>🏆 YOU BEAT 20!</h2>
-            <p>20 wins. 0 draws. 0 losses.</p>
-            <p>UNBEATEN.</p>
+            <h2>🏆 YOU BEAT ${TARGET_WINS}!</h2>
+            <p>${wins} wins. ${draws} draws. ${losses} losses.</p>
+            <p>${TARGET_WINS} wins achieved in ${totalGames} game${totalGames === 1 ? '' : 's'}.</p>
         `;
 
     } else {
 
         finalMessage = `
             <h2>🏏 Season Complete</h2>
-            <p>You didn't beat 20 this time.</p>
+            <p>You didn't beat ${TARGET_WINS} this time.</p>
         `;
-
     }
 
 
@@ -390,6 +392,10 @@ function showFinalResults() {
 
             <p>
                 Losses: ${losses}
+            </p>
+
+            <p>
+                Total games: ${totalGames}
             </p>
 
             <h2>
