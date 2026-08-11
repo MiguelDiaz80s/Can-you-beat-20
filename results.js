@@ -2,7 +2,8 @@
 // CAN YOU BEAT 20 - RESULTS SYSTEM
 // ==========================================
 
-let currentMatch = 1;
+let currentMatch = 1; // next match number shown (gamesPlayed + 1)
+let gamesPlayed = 0;   // counts every game played (wins/draws/losses)
 let wins = 0;
 let draws = 0;
 let losses = 0;
@@ -16,6 +17,7 @@ let matchHistory = [];
 function startSeason() {
 
     currentMatch = 1;
+    gamesPlayed = 0;
     wins = 0;
     draws = 0;
     losses = 0;
@@ -77,10 +79,8 @@ function generateMatch() {
 
     // Don't play yourself
     if (opponent === teamName) {
-
         opponent =
             opponents[Math.floor(Math.random() * opponents.length)];
-
     }
 
 
@@ -118,9 +118,12 @@ function generateMatch() {
     }
 
 
+    // Increment gamesPlayed so every result counts as a game
+    gamesPlayed++;
+
     let match = {
 
-        number: currentMatch,
+        number: gamesPlayed,
 
         team: teamName,
 
@@ -137,6 +140,9 @@ function generateMatch() {
 
     matchHistory.push(match);
 
+    // Update next match number
+    currentMatch = gamesPlayed + 1;
+
     return match;
 }
 
@@ -147,17 +153,15 @@ function generateMatch() {
 
 function playNextGame() {
 
-    if (currentMatch > 20) {
+    // If we've already played 20 games, show final results
+    if (gamesPlayed >= 20) {
         showFinalResults();
         return;
     }
 
-
     let match = generateMatch();
 
     showResult(match);
-
-    currentMatch++;
 }
 
 
@@ -167,14 +171,10 @@ function playNextGame() {
 
 function skipToResult() {
 
-    while (currentMatch <= 20) {
-
+    // Play until we've completed 20 games
+    while (gamesPlayed < 20) {
         generateMatch();
-
-        currentMatch++;
-
     }
-
 
     showFinalResults();
 }
@@ -190,12 +190,14 @@ function showMatchScreen() {
 
     if (!result) return;
 
+    // next match number is gamesPlayed + 1
+    const nextMatchNumber = Math.min(gamesPlayed + 1, 20);
 
     result.innerHTML = `
 
         <div class="card">
 
-            <h2>🏏 Game ${currentMatch}/20</h2>
+            <h2>🏏 Game ${nextMatchNumber}/20</h2>
 
             <p>
                 ${selectedCountry || "Your Team"}
@@ -279,7 +281,7 @@ function showResult(match) {
             </p>
 
             ${
-                currentMatch <= 20
+                gamesPlayed < 20
                 ? `
                     <button onclick="playNextGame()">
                         ▶ Play Next Game
@@ -312,6 +314,8 @@ function showFinalResults() {
 
     if (!result) return;
 
+
+    const totalGames = matchHistory.length;
 
     let finalMessage = "";
 
@@ -390,6 +394,10 @@ function showFinalResults() {
 
             <p>
                 Losses: ${losses}
+            </p>
+
+            <p>
+                Total games: ${totalGames}
             </p>
 
             <h2>
