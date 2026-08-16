@@ -226,8 +226,9 @@ function showMatchScreen() {
     if (!result) return;
 
 
+    // show gamesPlayed so it displays 0/20 before the first match
     let matchNumber =
-        Math.min(gamesPlayed + 1, 20);
+        Math.min(gamesPlayed, 20);
 
 
     result.innerHTML = `
@@ -299,7 +300,7 @@ function showMatchResult(match) {
 
                 <h2>
                     ${resultEmoji}
-                    MATCH ${match.number}
+                    MATCH ${match.number}/20
                 </h2>
 
                 <h3>
@@ -355,7 +356,7 @@ function showMatchResult(match) {
 
             <h2>
                 ${resultEmoji}
-                MATCH ${match.number}
+                MATCH ${match.number}/20
             </h2>
 
             <h3>
