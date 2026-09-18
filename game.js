@@ -61,10 +61,7 @@ function renderTeams(){
   box.querySelectorAll("[data-team-index]").forEach(button=>{
     button.addEventListener("click",()=>pickTeam(data.teams[Number(button.dataset.teamIndex)]));
   });
-  $("randomTeamBtn").onclick=()=>{
-    const team=data.teams[Math.floor(Math.random()*data.teams.length)];
-    pickTeam(team);
-  };
+  $("randomTeamBtn").onclick=()=>randomizeTeamAndEra(data.teams);
 }
 
 function teamEmoji(team){
@@ -77,6 +74,83 @@ function pickTeam(team){
   selectedCountry=(typeof teamData!=="undefined"?teamData[team]?.country:null)||team;
   show("era");
 }
+function randomizeTeamAndEra(teams){
+  const button=$("randomTeamBtn"), panel=$("randomizer");
+  if(!button||!panel||!teams.length||button.dataset.busy==="1") return;
+
+  button.dataset.busy="1";
+  button.disabled=true;
+  panel.classList.remove("hidden");
+  $("randomizerLabel").textContent="RANDOM TEAM";
+  $("randomizerStatus").textContent="🎰 Rolling through teams...";
+  $("randomSlotValue").textContent="🎲";
+
+  const team=teams[Math.floor(Math.random()*teams.length)];
+
+  spinSlot(teams,team,1050).then(()=>{
+    selectedTeam=team;
+    selectedCountry=(typeof teamData!=="undefined"?teamData[team]?.country:null)||team;
+    $("randomizerStatus").textContent="✅ Team locked: "+team;
+    $("randomizerLabel").textContent="TEAM SELECTED";
+    $("randomSlotValue").textContent=team;
+
+    setTimeout(()=>{
+      $("randomizerLabel").textContent="RANDOM ERA";
+      $("randomizerStatus").textContent="🎰 Spinning through eras...";
+      $("randomSlotValue").textContent="🎲";
+
+      const era=ERA_LIST[Math.floor(Math.random()*ERA_LIST.length)];
+      spinSlot(ERA_LIST,era,1150).then(()=>{
+        selectedEra=era;
+        squad=[];
+        $("randomizerStatus").textContent="✅ Era locked: "+era;
+        $("randomizerLabel").textContent="ERA SELECTED";
+        $("randomSlotValue").textContent=era;
+
+        setTimeout(()=>{
+          button.disabled=false;
+          button.dataset.busy="0";
+          chooseEra(era);
+        },650);
+      });
+    },750);
+  });
+}
+
+function spinSlot(items,finalValue,duration){
+  return new Promise(resolve=>{
+    const value=$("randomSlotValue");
+    const start=performance.now();
+    let lastIndex=-1;
+
+    function tick(now){
+      const elapsed=now-start;
+      const progress=Math.min(1,elapsed/duration);
+      const eased=1-Math.pow(1-progress,3);
+      const step=Math.max(55,Math.floor(150-eased*95));
+
+      if(elapsed>=duration){
+        value.textContent=finalValue;
+        value.classList.remove("slot-spinning");
+        void value.offsetWidth;
+        value.classList.add("slot-land");
+        setTimeout(()=>{value.classList.remove("slot-land");resolve()},260);
+        return;
+      }
+
+      const index=Math.floor((elapsed/step))%items.length;
+      if(index!==lastIndex){
+        value.textContent=items[index];
+        lastIndex=index;
+      }
+      value.classList.add("slot-spinning");
+      requestAnimationFrame(tick);
+    }
+
+    requestAnimationFrame(tick);
+  });
+}
+
 
 function renderEras(){
   const box=$("eraButtons");
