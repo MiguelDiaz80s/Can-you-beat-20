@@ -1,4 +1,5 @@
 name: Build cricket player database
+# Rebuilds the game player database whenever the generator changes.
 
 on:
   push:
