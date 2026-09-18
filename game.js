@@ -1,7 +1,13 @@
 let selectedMode="",selectedCompetition="",selectedTeam="",selectedCountry="",selectedEra="";
 let squad=[],currentMatch=1,currentStreak=0,bestStreak=0,careerWins=0,careerLosses=0,careerDraws=0,history=[];
 let draftSaves={};
-const ERA_LIST=["1900s","1910s","1920s","1930s","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020s"];\n\nfunction getAvailableEras(){\n  if(selectedCompetition==="BBL") return ["2010s","2020s"];\n  if(selectedCompetition==="IPL") return ["2000s","2010s","2020s"];\n  return ERA_LIST;\n}
+const ERA_LIST=["1900s","1910s","1920s","1930s","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020s"];
+
+function getAvailableEras(){
+  if(selectedCompetition==="BBL") return ["2010s","2020s"];
+  if(selectedCompetition==="IPL") return ["2000s","2010s","2020s"];
+  return ERA_LIST;
+}
 const $=id=>document.getElementById(id);
 
 function init(){
@@ -100,8 +106,9 @@ function randomizeTeamAndEra(teams){
       $("randomizerStatus").textContent="🎰 Spinning through eras...";
       $("randomSlotValue").textContent="🎲";
 
-      const era=ERA_LIST[Math.floor(Math.random()*ERA_LIST.length)];
-      spinSlot(ERA_LIST,era,1150).then(()=>{
+      const eras=getAvailableEras();
+      const era=eras[Math.floor(Math.random()*eras.length)];
+      spinSlot(eras,era,1150).then(()=>{
         selectedEra=era;
         squad=[];
         $("randomizerStatus").textContent="✅ Era locked: "+era;
