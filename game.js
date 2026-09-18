@@ -1,5 +1,6 @@
 let selectedMode="",selectedCompetition="",selectedTeam="",selectedCountry="",selectedEra="";
-let squad=[],currentMatch=1,currentStreak=0,bestStreak=0,careerWins=0,careerLosses=0,careerDraws=0,history=[];\nlet draftSaves={};
+let squad=[],currentMatch=1,currentStreak=0,bestStreak=0,careerWins=0,careerLosses=0,careerDraws=0,history=[];
+let draftSaves={};
 const ERA_LIST=["1930s","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020s"];
 const $=id=>document.getElementById(id);
 
@@ -71,7 +72,7 @@ function teamEmoji(team){
 
 function pickTeam(team){
   selectedTeam=team;
-  selectedCountry=(typeof teamData!=="undefined"?teamData[team]?.country:null)||team;
+  selectedCountry=(typeof teamData!=="undefined"?teamData[team]?.pool:null)||team;
   show("era");
 }
 function randomizeTeamAndEra(teams){
@@ -89,7 +90,7 @@ function randomizeTeamAndEra(teams){
 
   spinSlot(teams,team,1050).then(()=>{
     selectedTeam=team;
-    selectedCountry=(typeof teamData!=="undefined"?teamData[team]?.country:null)||team;
+    selectedCountry=(typeof teamData!=="undefined"?teamData[team]?.pool:null)||team;
     $("randomizerStatus").textContent="✅ Team locked: "+team;
     $("randomizerLabel").textContent="TEAM SELECTED";
     $("randomSlotValue").textContent=team;
@@ -291,7 +292,8 @@ function viewHistory(){
 }
 function resetAll(){
   selectedMode=selectedCompetition=selectedTeam=selectedCountry=selectedEra="";
-  squad=[];currentMatch=1;currentStreak=0;history=[];draftSaves={};\n  try{ localStorage.removeItem("cyb20Drafts"); }catch(error){}
+  squad=[];currentMatch=1;currentStreak=0;history=[];draftSaves={};
+  try{ localStorage.removeItem("cyb20Drafts"); }catch(error){}
   show("home");updateHome();
 }
 function updateHome(){
