@@ -176,11 +176,18 @@ function getPool(){
   const raw=playerDatabase[selectedCountry]||[];
   const exact=raw.filter(player=>player[5].includes(selectedEra));
   let pool=exact.slice();
-  if(pool.length<14){
+
+  // Club pools are era-specific. Never fill a club era with players from
+  // another era, because that creates impossible combinations such as
+  // Australia legends appearing for the Melbourne Stars.
+  const isClubPool=["Adelaide Strikers","Brisbane Heat","Hobart Hurricanes","Melbourne Renegades","Melbourne Stars","Perth Scorchers","Sydney Sixers","Sydney Thunder"].includes(selectedCountry);
+
+  if(!isClubPool && pool.length<14){
     raw.slice().sort((a,b)=>distanceToEra(a)-distanceToEra(b)).forEach(player=>{
       if(!pool.includes(player)) pool.push(player);
     });
   }
+
   return pool.slice(0,20).map(player=>buildPlayer(selectedCountry,player));
 }
 
