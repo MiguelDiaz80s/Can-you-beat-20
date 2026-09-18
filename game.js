@@ -1,7 +1,7 @@
 let selectedMode="",selectedCompetition="",selectedTeam="",selectedCountry="",selectedEra="";
 let squad=[],currentMatch=1,currentStreak=0,bestStreak=0,careerWins=0,careerLosses=0,careerDraws=0,history=[];
 let draftSaves={};
-const ERA_LIST=["1930s","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020s"];
+const ERA_LIST=["1900s","1910s","1920s","1930s","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020s"];\n\nfunction getAvailableEras(){\n  if(selectedCompetition==="BBL") return ["2010s","2020s"];\n  if(selectedCompetition==="IPL") return ["2000s","2010s","2020s"];\n  return ERA_LIST;\n}
 const $=id=>document.getElementById(id);
 
 function init(){
@@ -156,7 +156,7 @@ function spinSlot(items,finalValue,duration){
 function renderEras(){
   const box=$("eraButtons");
   if(!box) return;
-  box.innerHTML=ERA_LIST.map(era=>
+  box.innerHTML=getAvailableEras().map(era=>
     '<button type="button" class="era-button" data-era="'+era+'">'+era+"</button>"
   ).join("");
   box.querySelectorAll("[data-era]").forEach(button=>{
@@ -180,7 +180,7 @@ function getPool(){
   // Club pools are era-specific. Never fill a club era with players from
   // another era, because that creates impossible combinations such as
   // Australia legends appearing for the Melbourne Stars.
-  const isClubPool=["Adelaide Strikers","Brisbane Heat","Hobart Hurricanes","Melbourne Renegades","Melbourne Stars","Perth Scorchers","Sydney Sixers","Sydney Thunder"].includes(selectedCountry);
+  const isClubPool=[...Object.keys(typeof teamData!=="undefined"?teamData:{}), "Adelaide Strikers","Brisbane Heat","Hobart Hurricanes","Melbourne Renegades","Melbourne Stars","Perth Scorchers","Sydney Sixers","Sydney Thunder"].includes(selectedCountry) && selectedCountry!==selectedTeam ? true : ["Adelaide Strikers","Brisbane Heat","Hobart Hurricanes","Melbourne Renegades","Melbourne Stars","Perth Scorchers","Sydney Sixers","Sydney Thunder"].includes(selectedCountry);
 
   if(!isClubPool && pool.length<14){
     raw.slice().sort((a,b)=>distanceToEra(a)-distanceToEra(b)).forEach(player=>{
