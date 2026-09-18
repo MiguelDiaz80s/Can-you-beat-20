@@ -234,11 +234,14 @@ function renderDraft(){
   const selected=new Set(squad.map(player=>player.name));
   $("draftTeam").textContent=selectedTeam+" • "+selectedMode;
   $("draftEra").textContent=selectedEra;
-  $("playerCards").innerHTML=pool.map((player,index)=>
+  const search=$("playerSearch");
+  const term=search?search.value.trim().toLowerCase():"";
+  const visiblePool=term?pool.filter(player=>player.name.toLowerCase().includes(term)):pool;
+  $("playerCards").innerHTML=visiblePool.map((player,index)=>
     '<div class="card player-card"><div class="role">'+player.role+'</div><h3>'+player.name+'</h3><div class="ratings"><span>BAT<b>'+player.batting+'</b></span><span>BOWL<b>'+player.bowling+'</b></span><span>FIELD<b>'+player.fielding+'</b></span></div><button type="button" class="select-button" data-player-index="'+index+'" '+(selected.has(player.name)?"disabled":"")+'>' +(selected.has(player.name)?"SELECTED":"SELECT")+'</button></div>'
   ).join("");
   $("playerCards").querySelectorAll("[data-player-index]").forEach(button=>{
-    button.addEventListener("click",()=>selectPlayer(pool[Number(button.dataset.playerIndex)]?.name));
+    button.addEventListener("click",()=>selectPlayer(visiblePool[Number(button.dataset.playerIndex)]?.name));
   });
   $("draftCount").textContent=squad.length+"/11";
   $("selectedPlayers").innerHTML=squad.length
@@ -249,6 +252,10 @@ function renderDraft(){
   $("roleWarning").textContent=squad.length===11?(bowl<3?"⚠️ Consider 3+ bowlers.":wk<1?"⚠️ No wicketkeeper selected.":"✅ XI ready."):"";
   $("startChallengeBtn").classList.toggle("hidden",squad.length!==11);
   $("startChallengeBtn").onclick=startChallenge;
+  if(search && !search.dataset.bound){
+    search.dataset.bound="1";
+    search.addEventListener("input",()=>renderDraft());
+  }
 }
 
 function selectPlayer(name){
