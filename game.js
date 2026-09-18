@@ -8,6 +8,18 @@ function getAvailableEras(){
   if(selectedCompetition==="IPL") return ["2000s","2010s","2020s"];
   return ERA_LIST;
 }
+
+function modeGender(){
+  return selectedMode==="Womens" ? "female" : "male";
+}
+
+function databaseTeams(){
+  if(typeof playerDatabase==="undefined") return [];
+  const gender=modeGender();
+  return Object.keys(playerDatabase)
+    .filter(team=>playerDatabase[team].some(player=>(player[6]||"male")===gender))
+    .sort((a,b)=>a.localeCompare(b));
+}
 const $=id=>document.getElementById(id);
 
 function init(){
@@ -60,15 +72,28 @@ function chooseCompetition(c){
 function renderTeams(){
   const data=typeof competitionData!=="undefined"?competitionData[selectedCompetition]:null;
   if(!data) return;
-  $("teamTitle").textContent="Choose your team";
+  const teams=selectedCompetition==="WORLD"?databaseTeams():data.teams.slice();
+  $("teamTitle").textContent=selectedCompetition==="WORLD"?"Worldwide cricket teams":"Choose your team";
   const box=$("teamButtons");
-  box.innerHTML=data.teams.map((team,index)=>
-    '<button type="button" class="team-button" data-team-index="'+index+'">'+teamEmoji(team)+" "+team+"</button>"
-  ).join("");
-  box.querySelectorAll("[data-team-index]").forEach(button=>{
-    button.addEventListener("click",()=>pickTeam(data.teams[Number(button.dataset.teamIndex)]));
-  });
-  $("randomTeamBtn").onclick=()=>randomizeTeamAndEra(data.teams);
+  const searchWrap=selectedCompetition==="WORLD"
+    ? '<div class="card team-search-card"><input id="teamSearch" class="team-search" type="search" placeholder="🔎 Search any team..." autocomplete="off"></div>'
+    : "";
+  box.innerHTML=searchWrap+'<div id="teamButtonList" class="button-grid-inner"></div>';
+  const list=$("teamButtonList");
+  const draw=(term="")=>{
+    const q=term.trim().toLowerCase();
+    const filtered=q?teams.filter(team=>team.toLowerCase().includes(q)):teams;
+    list.innerHTML=filtered.map((team,index)=>
+      '<button type="button" class="team-button" data-team="'+encodeURIComponent(team)+'">'+teamEmoji(team)+" "+team+"</button>"
+    ).join("");
+    list.querySelectorAll("[data-team]").forEach(button=>{
+      button.addEventListener("click",()=>pickTeam(decodeURIComponent(button.dataset.team)));
+    });
+  };
+  draw();
+  const search=$("teamSearch");
+  if(search) search.addEventListener("input",()=>draw(search.value));
+  $("randomTeamBtn").onclick=()=>randomizeTeamAndEra(teams);
 }
 
 function teamEmoji(team){
@@ -181,7 +206,8 @@ function chooseEra(era){
 function getPool(){
   if(typeof playerDatabase==="undefined") return [];
   const raw=playerDatabase[selectedCountry]||[];
-  const exact=raw.filter(player=>player[5].includes(selectedEra));
+  const gender=modeGender();
+  const exact=raw.filter(player=>player[5].includes(selectedEra) && (player[6]||"male")===gender);
   let pool=exact.slice();
 
   // Club pools are era-specific. Never fill a club era with players from
