@@ -6,3 +6,5 @@
 #randomSlotValue.slot-land{animation:slotLand .26s ease-out}
 @keyframes slotPulse{0%{transform:translateY(-2px) scale(.98);opacity:.7}50%{transform:translateY(2px) scale(1.02);opacity:1}100%{transform:translateY(-2px) scale(.98);opacity:.7}}
 @keyframes slotLand{0%{transform:scale(.72);opacity:.2}70%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+
+.team-search-card{margin:12px 0}.team-search{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:#083d2a;color:#fff;font:inherit;outline:none}.team-search::placeholder{color:rgba(255,255,255,.58)}.button-grid-inner{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.player-search-card{margin:10px 0 14px}
