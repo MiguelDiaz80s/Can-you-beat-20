@@ -1,29 +1,229 @@
-let selectedMode="",selectedCompetition="",selectedTeam="",selectedCountry="",selectedEra="",squad=[],currentMatch=1,currentStreak=0,bestStreak=0,careerWins=0,careerLosses=0,careerDraws=0,history=[];const ERA_LIST=["1930s","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020s"],$=id=>document.getElementById(id);
-function init(){const modes=[["Mens","🏏 Men's"],["Womens","🏏 Women's"]];$("modeButtons").innerHTML=modes.map(m=>'<button type="button" class="mode-button">'+m[1]+"</button>").join("");document.querySelectorAll("#modeButtons .mode-button").forEach((b,i)=>b.onclick=()=>startGame(modes[i][0]));$("competitionButtons").innerHTML=Object.entries(competitionData).map(([k,v])=>'<button type="button" class="competition-button">'+v.label+"</button>").join("");document.querySelectorAll("#competitionButtons .competition-button").forEach((b,i)=>b.onclick=()=>chooseCompetition(Object.keys(competitionData)[i]));$("eraButtons").innerHTML=ERA_LIST.map(e=>'<button type="button" class="era-button">'+e+"</button>").join("");document.querySelectorAll("#eraButtons .era-button").forEach((b,i)=>b.onclick=()=>chooseEra(ERA_LIST[i]));$("resetGameBtn").onclick=resetAll;document.querySelectorAll(".back-btn").forEach(b=>b.onclick=()=>show(b.dataset.back));updateHome()}
-function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));$(id).classList.remove("hidden");window.scrollTo(0,0)}
-function startGame(mode){selectedMode=mode;show("competition")}
-function chooseCompetition(c){selectedCompetition=c;renderTeams();show("teams")}
-function renderTeams(){const data=competitionData[selectedCompetition];$("teamTitle").textContent="Choose your team";$("teamButtons").innerHTML=data.teams.map(t=>'<button type="button" class="team-button">'+teamEmoji(t)+" "+t+"</button>").join("");document.querySelectorAll("#teamButtons .team-button").forEach((b,i)=>b.onclick=()=>pickTeam(data.teams[i]));$("randomTeamBtn").onclick=()=>{const t=data.teams[Math.floor(Math.random()*data.teams.length)];pickTeam(t)}}
-function teamEmoji(t){const c=teamData[t]?.country;return c==="Australia"?"🇦🇺":c==="India"?"🇮🇳":c==="England"?"🏴":c==="South Africa"?"🇿🇦":c==="New Zealand"?"🇳🇿":c==="Pakistan"?"🇵🇰":c==="Sri Lanka"?"🇱🇰":c==="West Indies"?"🏝️":"🏏"}
-function pickTeam(t){selectedTeam=t;selectedCountry=teamData[t]?.country||t;show("era")}
-function chooseEra(e){selectedEra=e;squad=[];renderDraft();show("draft")}
-function getPool(){const raw=playerDatabase[selectedCountry]||[];const exact=raw.filter(p=>p[5].includes(selectedEra));let pool=exact.slice();if(pool.length<14)raw.slice().sort((a,b)=>distanceToEra(a)-distanceToEra(b)).forEach(p=>{if(!pool.includes(p))pool.push(p)});return pool.slice(0,20).map(p=>buildPlayer(selectedCountry,p))}
-function distanceToEra(p){const idx=ERA_LIST.indexOf(selectedEra);return Math.min(...p[5].map(e=>Math.abs(ERA_LIST.indexOf(e)-idx)))}
-function renderDraft(){ $("draftTeam").textContent=selectedTeam+" • "+selectedMode;$("draftEra").textContent=selectedEra;const pool=getPool(),selected=new Set(squad.map(p=>p.name));$("playerCards").innerHTML=pool.map(p=>'<div class="card player-card"><div class="role">'+p.role+'</div><h3>'+p.name+'</h3><div class="ratings"><span>BAT<b>'+p.batting+'</b></span><span>BOWL<b>'+p.bowling+'</b></span><span>FIELD<b>'+p.fielding+'</b></span></div><button class="select-button" '+(selected.has(p.name)?"disabled":"")+' onclick="selectPlayer(\''+p.name.replace(/'/g,"\\'")+"\')">"+(selected.has(p.name)?"SELECTED":"SELECT")+"</button></div>").join("");$("draftCount").textContent=squad.length+"/11";$("selectedPlayers").innerHTML=squad.length?'<b>Your XI</b><div class="selected-list">'+squad.map((p,i)=>'<span class="pill">'+(i+1)+". "+p.name+"</span>").join("")+"</div>":"<b>Your XI</b><p class="muted">Pick 11 players and balance the roles.</p>";const bowl=squad.filter(p=>p.role==="Bowler").length,bat=squad.filter(p=>p.role==="Batter").length,wk=squad.filter(p=>p.role==="Wicketkeeper").length;$("roleWarning").textContent=squad.length===11?(bowl<3?"⚠️ Consider 3+ bowlers.":wk<1?"⚠️ No wicketkeeper selected.":"✅ XI ready."):"";$("startChallengeBtn").classList.toggle("hidden",squad.length!==11);$("startChallengeBtn").onclick=startChallenge}
-function selectPlayer(name){const p=getPool().find(x=>x.name===name);if(!p||squad.length>=11||squad.some(x=>x.name===name))return;squad.push(p);renderDraft()}
-function startChallenge(){currentMatch=1;currentStreak=0;history=[];showMatchScreen()}
+let selectedMode="",selectedCompetition="",selectedTeam="",selectedCountry="",selectedEra="";
+let squad=[],currentMatch=1,currentStreak=0,bestStreak=0,careerWins=0,careerLosses=0,careerDraws=0,history=[];
+const ERA_LIST=["1930s","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020s"];
+const $=id=>document.getElementById(id);
+
+function init(){
+  const modeButtons=document.querySelectorAll("#modeButtons [data-mode]");
+  modeButtons.forEach(button=>{
+    button.addEventListener("click",()=>startGame(button.dataset.mode));
+  });
+
+  const reset=$("resetGameBtn");
+  if(reset) reset.addEventListener("click",resetAll);
+
+  document.querySelectorAll(".back-btn").forEach(button=>{
+    button.addEventListener("click",()=>show(button.dataset.back));
+  });
+
+  renderCompetitions();
+  renderEras();
+  updateHome();
+}
+
+function show(id){
+  document.querySelectorAll(".screen").forEach(screen=>screen.classList.add("hidden"));
+  const target=$(id);
+  if(target) target.classList.remove("hidden");
+  window.scrollTo(0,0);
+}
+
+function startGame(mode){
+  selectedMode=mode;
+  show("competition");
+}
+
+function renderCompetitions(){
+  const box=$("competitionButtons");
+  if(!box||typeof competitionData==="undefined") return;
+  box.innerHTML=Object.entries(competitionData).map(([key,value])=>
+    '<button type="button" class="competition-button" data-competition="'+key+'">'+value.label+"</button>"
+  ).join("");
+  box.querySelectorAll("[data-competition]").forEach(button=>{
+    button.addEventListener("click",()=>chooseCompetition(button.dataset.competition));
+  });
+}
+
+function chooseCompetition(c){
+  selectedCompetition=c;
+  renderTeams();
+  show("teams");
+}
+
+function renderTeams(){
+  const data=typeof competitionData!=="undefined"?competitionData[selectedCompetition]:null;
+  if(!data) return;
+  $("teamTitle").textContent="Choose your team";
+  const box=$("teamButtons");
+  box.innerHTML=data.teams.map((team,index)=>
+    '<button type="button" class="team-button" data-team-index="'+index+'">'+teamEmoji(team)+" "+team+"</button>"
+  ).join("");
+  box.querySelectorAll("[data-team-index]").forEach(button=>{
+    button.addEventListener("click",()=>pickTeam(data.teams[Number(button.dataset.teamIndex)]));
+  });
+  $("randomTeamBtn").onclick=()=>{
+    const team=data.teams[Math.floor(Math.random()*data.teams.length)];
+    pickTeam(team);
+  };
+}
+
+function teamEmoji(team){
+  const country=typeof teamData!=="undefined"?teamData[team]?.country:"";
+  return country==="Australia"?"🇦🇺":country==="India"?"🇮🇳":country==="England"?"🏴":country==="South Africa"?"🇿🇦":country==="New Zealand"?"🇳🇿":country==="Pakistan"?"🇵🇰":country==="Sri Lanka"?"🇱🇰":country==="West Indies"?"🏝️":"🏏";
+}
+
+function pickTeam(team){
+  selectedTeam=team;
+  selectedCountry=(typeof teamData!=="undefined"?teamData[team]?.country:null)||team;
+  show("era");
+}
+
+function renderEras(){
+  const box=$("eraButtons");
+  if(!box) return;
+  box.innerHTML=ERA_LIST.map(era=>
+    '<button type="button" class="era-button" data-era="'+era+'">'+era+"</button>"
+  ).join("");
+  box.querySelectorAll("[data-era]").forEach(button=>{
+    button.addEventListener("click",()=>chooseEra(button.dataset.era));
+  });
+}
+
+function chooseEra(era){
+  selectedEra=era;
+  squad=[];
+  renderDraft();
+  show("draft");
+}
+
+function getPool(){
+  if(typeof playerDatabase==="undefined") return [];
+  const raw=playerDatabase[selectedCountry]||[];
+  const exact=raw.filter(player=>player[5].includes(selectedEra));
+  let pool=exact.slice();
+  if(pool.length<14){
+    raw.slice().sort((a,b)=>distanceToEra(a)-distanceToEra(b)).forEach(player=>{
+      if(!pool.includes(player)) pool.push(player);
+    });
+  }
+  return pool.slice(0,20).map(player=>buildPlayer(selectedCountry,player));
+}
+
+function distanceToEra(player){
+  const index=ERA_LIST.indexOf(selectedEra);
+  return Math.min(...player[5].map(era=>Math.abs(ERA_LIST.indexOf(era)-index)));
+}
+
+function renderDraft(){
+  const pool=getPool();
+  const selected=new Set(squad.map(player=>player.name));
+  $("draftTeam").textContent=selectedTeam+" • "+selectedMode;
+  $("draftEra").textContent=selectedEra;
+  $("playerCards").innerHTML=pool.map((player,index)=>
+    '<div class="card player-card"><div class="role">'+player.role+'</div><h3>'+player.name+'</h3><div class="ratings"><span>BAT<b>'+player.batting+'</b></span><span>BOWL<b>'+player.bowling+'</b></span><span>FIELD<b>'+player.fielding+'</b></span></div><button type="button" class="select-button" data-player-index="'+index+'" '+(selected.has(player.name)?"disabled":"")+'>' +(selected.has(player.name)?"SELECTED":"SELECT")+'</button></div>'
+  ).join("");
+  $("playerCards").querySelectorAll("[data-player-index]").forEach(button=>{
+    button.addEventListener("click",()=>selectPlayer(pool[Number(button.dataset.playerIndex)]?.name));
+  });
+  $("draftCount").textContent=squad.length+"/11";
+  $("selectedPlayers").innerHTML=squad.length
+    ? '<b>Your XI</b><div class="selected-list">'+squad.map((player,index)=>'<span class="pill">'+(index+1)+". "+player.name+"</span>").join("")+"</div>"
+    : '<b>Your XI</b><p class="muted">Pick 11 players and balance the roles.</p>';
+  const bowl=squad.filter(player=>player.role==="Bowler").length;
+  const wk=squad.filter(player=>player.role==="Wicketkeeper").length;
+  $("roleWarning").textContent=squad.length===11?(bowl<3?"⚠️ Consider 3+ bowlers.":wk<1?"⚠️ No wicketkeeper selected.":"✅ XI ready."):"";
+  $("startChallengeBtn").classList.toggle("hidden",squad.length!==11);
+  $("startChallengeBtn").onclick=startChallenge;
+}
+
+function selectPlayer(name){
+  const player=getPool().find(item=>item.name===name);
+  if(!player||squad.length>=11||squad.some(item=>item.name===name)) return;
+  squad.push(player);
+  renderDraft();
+}
+
+function startChallenge(){
+  currentMatch=1;
+  currentStreak=0;
+  history=[];
+  showMatchScreen();
+}
+
 function difficulty(){return Math.min(.16,(currentMatch-1)*.012)}
-function squadStrength(){if(!squad.length)return 50;const bat=squad.reduce((s,p)=>s+p.batting,0)/squad.length,bowl=squad.reduce((s,p)=>s+p.bowling,0)/squad.length,field=squad.reduce((s,p)=>s+p.fielding,0)/squad.length,wk=squad.some(p=>p.role==="Wicketkeeper")?4:-4,balance=(squad.filter(p=>p.role==="Bowler").length>=3?3:0)+(squad.filter(p=>p.role==="Batter").length>=4?3:0);return bat*.4+bowl*.4+field*.2+wk+balance}
-function opponentName(){const all=["Australia","India","England","South Africa","New Zealand","Pakistan","Sri Lanka","West Indies"],p=all.filter(x=>x!==selectedCountry);return p[Math.floor(Math.random()*p.length)]}
-function showMatchScreen(){show("match");const pct=Math.min(100,currentStreak/20*100),opp=opponentName();$("matchPanel").innerHTML='<div class="card"><div class="match-top"><div><div class="eyebrow">20-MATCH CHALLENGE</div><h2>Match '+currentMatch+'/20</h2></div><strong>🔥 '+currentStreak+'/20</strong></div><div class="progress"><div style="width:'+pct+'%"></div></div></div><div class="card scoreboard"><div><small>'+selectedTeam+'</small><div class="score">XI</div></div><div class="vs">VS</div><div><small>'+opp+'</small><div class="score">🏏</div></div></div><div class="card"><h3>Match plan</h3><p class="muted">XI strength: <b>'+Math.round(squadStrength())+'</b>. The challenge gets harder as the streak grows.</p><div class="match-actions"><button class="gold" onclick="playMatch()">▶ PLAY</button><button onclick="showSquad()">👥 XI</button></div><button class="wide" onclick="quickSim()">⏩ Quick simulate</button></div>'}
+
+function squadStrength(){
+  if(!squad.length) return 50;
+  const bat=squad.reduce((sum,player)=>sum+player.batting,0)/squad.length;
+  const bowl=squad.reduce((sum,player)=>sum+player.bowling,0)/squad.length;
+  const field=squad.reduce((sum,player)=>sum+player.fielding,0)/squad.length;
+  const wk=squad.some(player=>player.role==="Wicketkeeper")?4:-4;
+  const balance=(squad.filter(player=>player.role==="Bowler").length>=3?3:0)+(squad.filter(player=>player.role==="Batter").length>=4?3:0);
+  return bat*.4+bowl*.4+field*.2+wk+balance;
+}
+
+function opponentName(){
+  const all=["Australia","India","England","South Africa","New Zealand","Pakistan","Sri Lanka","West Indies"];
+  const possible=all.filter(country=>country!==selectedCountry);
+  return possible[Math.floor(Math.random()*possible.length)];
+}
+
+function showMatchScreen(){
+  show("match");
+  const pct=Math.min(100,currentStreak/20*100);
+  const opp=opponentName();
+  $("matchPanel").innerHTML='<div class="card"><div class="match-top"><div><div class="eyebrow">20-MATCH CHALLENGE</div><h2>Match '+currentMatch+'/20</h2></div><strong>🔥 '+currentStreak+'/20</strong></div><div class="progress"><div style="width:'+pct+'%"></div></div></div><div class="card scoreboard"><div><small>'+selectedTeam+'</small><div class="score">XI</div></div><div class="vs">VS</div><div><small>'+opp+'</small><div class="score">🏏</div></div></div><div class="card"><h3>Match plan</h3><p class="muted">XI strength: <b>'+Math.round(squadStrength())+'</b>. The challenge gets harder as the streak grows.</p><div class="match-actions"><button type="button" class="gold" id="playMatchBtn">▶ PLAY</button><button type="button" id="showSquadBtn">👥 XI</button></div><button type="button" class="wide" id="quickSimBtn">⏩ Quick simulate</button></div>';
+  $("playMatchBtn").onclick=playMatch;
+  $("showSquadBtn").onclick=showSquad;
+  $("quickSimBtn").onclick=quickSim;
+}
+
 function showSquad(){renderDraft();show("draft")}
-function playMatch(){const opp=opponentName(),strength=squadStrength(),base=.58+(strength-75)/180-difficulty()+(selectedCompetition==="Test"?.02:0),roll=Math.random();let result=roll<Math.max(.25,Math.min(.9,base))?"WIN":roll<.96?"LOSS":"DRAW";if(result==="DRAW"&&selectedCompetition!=="Test")result="LOSS";const your=Math.max(80,Math.floor(190+Math.random()*150+(strength-75)*1.2)),oppScore=result==="WIN"?Math.max(70,your-Math.floor(8+Math.random()*65)):result==="LOSS"?your+Math.floor(5+Math.random()*65):your;history.push({n:currentMatch,opp,result,your,oppScore});if(result==="WIN"){currentStreak++;careerWins++}else if(result==="LOSS"){currentStreak=0;careerLosses++}else careerDraws++;bestStreak=Math.max(bestStreak,currentStreak);updateHome();renderResult(history[history.length-1])}
+
+function playMatch(){
+  const opp=opponentName(),strength=squadStrength();
+  const base=.58+(strength-75)/180-difficulty()+(selectedCompetition==="Test"?.02:0);
+  const roll=Math.random();
+  let result=roll<Math.max(.25,Math.min(.9,base))?"WIN":roll<.96?"LOSS":"DRAW";
+  if(result==="DRAW"&&selectedCompetition!=="Test") result="LOSS";
+  const your=Math.max(80,Math.floor(190+Math.random()*150+(strength-75)*1.2));
+  const oppScore=result==="WIN"?Math.max(70,your-Math.floor(8+Math.random()*65)):result==="LOSS"?your+Math.floor(5+Math.random()*65):your;
+  history.push({n:currentMatch,opp,result,your,oppScore});
+  if(result==="WIN"){currentStreak++;careerWins++}else if(result==="LOSS"){currentStreak=0;careerLosses++}else careerDraws++;
+  bestStreak=Math.max(bestStreak,currentStreak);
+  updateHome();
+  renderResult(history[history.length-1]);
+}
+
 function quickSim(){playMatch()}
-function renderResult(m){const win=m.result==="WIN",draw=m.result==="DRAW",cls=win?"result-win":draw?"result-draw":"result-loss",margin=Math.abs(m.your-m.oppScore);$("matchPanel").innerHTML='<div class="card '+cls+'"><div class="eyebrow">MATCH '+m.n+'</div><h2>'+(win?"🏆 YOU WIN!":draw?"🤝 DRAW":"❌ DEFEAT")+'</h2><div class="scoreboard"><div><small>'+selectedTeam+'</small><div class="score">'+m.your+'</div></div><div class="vs">-</div><div><small>'+m.opp+'</small><div class="score">'+m.oppScore+'</div></div></div><p><b>'+(win?"Won by ":"Lost by ")+margin+' runs</b></p></div><div class="card"><h3>🔥 Streak: '+currentStreak+'/20</h3><p class="muted">Best: '+bestStreak+' • Career wins: '+careerWins+' • Losses: '+careerLosses+'</p>'+(win&&currentStreak>=20?'<button class="gold wide" onclick="champion()">🏆 YOU BEAT 20!</button>':m.result==="LOSS"?'<button class="gold wide" onclick="restartChallenge()">🔄 Try again</button>':'<button class="gold wide" onclick="nextMatch()">▶ Next match</button>')+'<button class="wide" onclick="viewHistory()">📋 Match history</button></div>'}
-function nextMatch(){if(currentStreak>=20)champion();else{currentMatch++;showMatchScreen()}}
+
+function renderResult(match){
+  const win=match.result==="WIN",draw=match.result==="DRAW",cls=win?"result-win":draw?"result-draw":"result-loss",margin=Math.abs(match.your-match.oppScore);
+  $("matchPanel").innerHTML='<div class="card '+cls+'"><div class="eyebrow">MATCH '+match.n+'</div><h2>'+(win?"🏆 YOU WIN!":draw?"🤝 DRAW":"❌ DEFEAT")+'</h2><div class="scoreboard"><div><small>'+selectedTeam+'</small><div class="score">'+match.your+'</div></div><div class="vs">-</div><div><small>'+match.opp+'</small><div class="score">'+match.oppScore+'</div></div></div><p><b>'+(win?"Won by ":"Lost by ")+margin+' runs</b></p></div><div class="card"><h3>🔥 Streak: '+currentStreak+'/20</h3><p class="muted">Best: '+bestStreak+' • Career wins: '+careerWins+' • Losses: '+careerLosses+'</p><button type="button" class="gold wide" id="resultMainBtn">'+(win&&currentStreak>=20?"🏆 YOU BEAT 20!":match.result==="LOSS"?"🔄 Try again":"▶ Next match")+'</button><button type="button" class="wide" id="historyBtn">📋 Match history</button></div>';
+  $("resultMainBtn").onclick=win&&currentStreak>=20?champion:match.result==="LOSS"?restartChallenge:nextMatch;
+  $("historyBtn").onclick=viewHistory;
+}
+
+function nextMatch(){if(currentStreak>=20) champion(); else {currentMatch++;showMatchScreen()}}
 function restartChallenge(){currentMatch=1;currentStreak=0;history=[];showMatchScreen()}
-function champion(){$("matchPanel").innerHTML='<div class="card result-win" style="text-align:center"><div class="trophy">🏆</div><h2>YOU BEAT 20!</h2><p>You completed the 20-match streak.</p><button class="gold wide" onclick="restartChallenge()">Run it back</button><button class="wide" onclick="resetAll()">New XI</button></div>'}
-function viewHistory(){const rows=history.map(m=>'<div class="history-row"><span>Match '+m.n+' • '+m.opp+'</span><b>'+m.result+' '+m.your+'-'+m.oppScore+'</b></div>').join("");$("matchPanel").insertAdjacentHTML("beforeend",'<div class="card history"><h3>📋 History</h3>'+rows+"</div>")}
-function resetAll(){selectedMode=selectedCompetition=selectedTeam=selectedCountry=selectedEra="";squad=[];currentMatch=1;currentStreak=0;history=[];show("home");updateHome()}
-function updateHome(){$("homeStreak").textContent=currentStreak;$("homeBest").textContent=bestStreak;$("homeWins").textContent=careerWins}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+function champion(){
+  $("matchPanel").innerHTML='<div class="card result-win" style="text-align:center"><div class="trophy">🏆</div><h2>YOU BEAT 20!</h2><p>You completed the 20-match streak.</p><button type="button" class="gold wide" id="runBackBtn">Run it back</button><button type="button" class="wide" id="newXIBtn">New XI</button></div>';
+  $("runBackBtn").onclick=restartChallenge;
+  $("newXIBtn").onclick=resetAll;
+}
+function viewHistory(){
+  const rows=history.map(match=>'<div class="history-row"><span>Match '+match.n+' • '+match.opp+'</span><b>'+match.result+' '+match.your+'-'+match.oppScore+'</b></div>').join("");
+  $("matchPanel").insertAdjacentHTML("beforeend",'<div class="card history"><h3>📋 History</h3>'+rows+"</div>");
+}
+function resetAll(){
+  selectedMode=selectedCompetition=selectedTeam=selectedCountry=selectedEra="";
+  squad=[];currentMatch=1;currentStreak=0;history=[];
+  show("home");updateHome();
+}
+function updateHome(){
+  $("homeStreak").textContent=currentStreak;
+  $("homeBest").textContent=bestStreak;
+  $("homeWins").textContent=careerWins;
+}
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
+else init();
