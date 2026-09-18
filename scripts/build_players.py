@@ -85,7 +85,7 @@ for name,p in players.items():
     b,bo,f=ratings(p)
     r=role(p)
     for team,eras in p["teams"].items():
-        db[team].append([name,r,b,bo,f,sorted(eras)])
+        db[team].append([name,r,b,bo,f,sorted(eras),("female" if p["gender"]=={"female"} else "male")])
 
 legacy = {
 "Australia":[
@@ -136,6 +136,9 @@ for team,rows in legacy.items():
             db[team].append(row)
 
 for team in db:
+    for row in db[team]:
+        if len(row)==6:
+            row.append("male")
     db[team].sort(key=lambda x:x[0].lower())
 
 def js(s):
@@ -145,6 +148,6 @@ lines=["// AUTO-GENERATED from Cricsheet all_json.zip.","// Gameplay ratings are
 keys=sorted(db)
 for i,team in enumerate(keys):
     lines.append(js(team)+":"+js(db[team])+("," if i<len(keys)-1 else ""))
-lines += ["};","function buildPlayer(country,p){return{name:p[0],role:p[1],batting:p[2],bowling:p[3],fielding:p[4],eras:p[5],country}}"]
-open(OUT,"w",encoding="utf-8").write("\\n".join(lines)+"\\n")
+lines += ["};","function buildPlayer(country,p){return{name:p[0],role:p[1],batting:p[2],bowling:p[3],fielding:p[4],eras:p[5],gender:p[6]||"male",country}}"]
+open(OUT,"w",encoding="utf-8").write("\n".join(lines)+"\n")
 os.remove(ZIP)
