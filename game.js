@@ -3,7 +3,7 @@ function init(){ $("modeButtons").innerHTML=["Mens","Womens"].map(m=>'<button on
 function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));$(id).classList.remove("hidden");window.scrollTo(0,0)}
 function startGame(mode){selectedMode=mode;show("competition")}
 function chooseCompetition(c){selectedCompetition=c;renderTeams();show("teams")}
-function renderTeams(){const data=competitionData[selectedCompetition];$("teamTitle").textContent="Choose your team";$("teamButtons").innerHTML=data.teams.map(t=>'<button onclick="pickTeam(\''+t.replace(/'/g,"\\'")+"\')">"+teamEmoji(t)+" "+t+"</button>").join("");$("randomTeamBtn").onclick=()=>{const t=data.teams[Math.floor(Math.random()*data.teams.length)];pickTeam(t)}}
+function renderTeams(){const data=competitionData[selectedCompetition];$("teamTitle").textContent="Choose your team";$("teamButtons").innerHTML=data.teams.map(t=>'<button class="team-button">'+teamEmoji(t)+" "+t+"</button>").join("");document.querySelectorAll("#teamButtons .team-button").forEach((b,i)=>b.onclick=()=>pickTeam(data.teams[i]));$("randomTeamBtn").onclick=()=>{const t=data.teams[Math.floor(Math.random()*data.teams.length)];pickTeam(t)}}
 function teamEmoji(t){const c=teamData[t]?.country;return c==="Australia"?"🇦🇺":c==="India"?"🇮🇳":c==="England"?"🏴":c==="South Africa"?"🇿🇦":c==="New Zealand"?"🇳🇿":c==="Pakistan"?"🇵🇰":c==="Sri Lanka"?"🇱🇰":c==="West Indies"?"🏝️":"🏏"}
 function pickTeam(t){selectedTeam=t;selectedCountry=teamData[t]?.country||t;show("era")}
 function chooseEra(e){selectedEra=e;squad=[];renderDraft();show("draft")}
