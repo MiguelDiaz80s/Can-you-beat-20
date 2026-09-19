@@ -45,6 +45,27 @@ function databaseTeams(){
 }
 const $=id=>document.getElementById(id);
 
+// First-screen navigation uses one delegated click handler as a safety net.
+// Capture phase means the mode/gender buttons are handled before any other
+// click handler can interfere with them.
+document.addEventListener("click",(event)=>{
+  const target=event.target.closest?.("[data-game-mode],[data-gender]");
+  if(!target) return;
+
+  if(target.dataset.gameMode){
+    event.preventDefault();
+    event.stopPropagation();
+    selectGameMode(target.dataset.gameMode);
+    return;
+  }
+
+  if(target.dataset.gender){
+    event.preventDefault();
+    event.stopPropagation();
+    selectGender(target.dataset.gender);
+  }
+},true);
+
 function init(){
   const modeButtons=document.querySelectorAll("#modeButtons [data-game-mode]");
   modeButtons.forEach(button=>{
@@ -447,9 +468,3 @@ function updateHome(){
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
 else init();
 
-// Start the game after every script and DOM element has loaded.
-if(document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init);
-} else {
-  init();
-}
