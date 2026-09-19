@@ -25,3 +25,4 @@
 /* Final navigation safety: keep the four navigation controls above every card layer. */
 #modeButtons,#modeButtons .mode-button,#gender .mode-button{position:relative;z-index:9999;pointer-events:auto;display:block;}
 #modeButtons .mode-button,#gender .mode-button{width:100%;}
+#modeButtons{gap:14px;}
