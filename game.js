@@ -1,4 +1,5 @@
 let selectedMode="",selectedCompetition="",selectedTeam="",selectedCountry="",selectedEra="";
+let gameMode="",challengeMode=false;
 let squad=[],currentMatch=1,currentStreak=0,bestStreak=0,careerWins=0,careerLosses=0,careerDraws=0,history=[];
 let draftSaves={};
 const ERA_LIST=["1900s","1910s","1920s","1930s","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020s"];
@@ -23,10 +24,23 @@ function databaseTeams(){
 const $=id=>document.getElementById(id);
 
 function init(){
-  const modeButtons=document.querySelectorAll("#modeButtons [data-mode]");
+  const modeButtons=document.querySelectorAll("#modeButtons [data-game-mode]");
   modeButtons.forEach(button=>{
-    button.addEventListener("click",()=>startGame(button.dataset.mode));
+    button.addEventListener("click",()=>selectGameMode(button.dataset.gameMode));
   });
+  const genderButtons=document.querySelectorAll("#gender [data-gender]");
+  genderButtons.forEach(button=>{
+    button.addEventListener("click",()=>selectGender(button.dataset.gender));
+  });
+  const challengeToggle=$("challengeToggle");
+  if(challengeToggle){
+    challengeToggle.checked=challengeMode;
+    challengeToggle.addEventListener("change",()=>{
+      challengeMode=challengeToggle.checked;
+      updateChallengeUI();
+      renderDraft();
+    });
+  }
 
   const reset=$("resetGameBtn");
   if(reset) reset.addEventListener("click",resetAll);
@@ -47,9 +61,29 @@ function show(id){
   window.scrollTo(0,0);
 }
 
-function startGame(mode){
-  selectedMode=mode;
-  show("competition");
+function selectGameMode(mode){
+  gameMode=mode;
+  show("gender");
+}
+
+function selectGender(gender){
+  selectedMode=gender;
+  if(gameMode==="FreePlay"){
+    selectedCompetition="WORLD";
+    renderTeams();
+    show("teams");
+  }else{
+    renderCompetitions();
+    show("competition");
+  }
+}
+
+function updateChallengeUI(){
+  const toggle=$("challengeToggle");
+  const description=$("challengeDescription");
+  if(toggle) toggle.checked=challengeMode;
+  if(description) description.textContent=challengeMode?"Player stats hidden":"Player stats visible";
+  document.body.classList.toggle("challenge-on",challengeMode);
 }
 
 function renderCompetitions(){
@@ -65,8 +99,26 @@ function renderCompetitions(){
 
 function chooseCompetition(c){
   selectedCompetition=c;
+  if(gameMode==="RealGame"){
+    randomizeRealGame(c);
+    return;
+  }
   renderTeams();
   show("teams");
+}
+
+function randomizeRealGame(competition){
+  const data=typeof competitionData!=="undefined"?competitionData[competition]:null;
+  if(!data) return;
+  const teams=competition==="WORLD"?databaseTeams():data.teams.slice();
+  if(!teams.length) return;
+  selectedTeam=teams[Math.floor(Math.random()*teams.length)];
+  selectedCountry=(typeof teamData!=="undefined"?teamData[selectedTeam]?.pool:null)||selectedTeam;
+  const eras=getAvailableEras();
+  selectedEra=eras[Math.floor(Math.random()*eras.length)];
+  squad=[];
+  renderDraft();
+  show("draft");
 }
 
 function renderTeams(){
@@ -221,7 +273,7 @@ function getPool(){
     });
   }
 
-  return pool.slice(0,20).map(player=>buildPlayer(selectedCountry,player));
+  return pool.map(player=>buildPlayer(selectedCountry,player));
 }
 
 function distanceToEra(player){
@@ -237,9 +289,12 @@ function renderDraft(){
   const search=$("playerSearch");
   const term=search?search.value.trim().toLowerCase():"";
   const visiblePool=term?pool.filter(player=>player.name.toLowerCase().includes(term)):pool;
-  $("playerCards").innerHTML=visiblePool.map((player,index)=>
-    '<div class="card player-card"><div class="role">'+player.role+'</div><h3>'+player.name+'</h3><div class="ratings"><span>BAT<b>'+player.batting+'</b></span><span>BOWL<b>'+player.bowling+'</b></span><span>FIELD<b>'+player.fielding+'</b></span></div><button type="button" class="select-button" data-player-index="'+index+'" '+(selected.has(player.name)?"disabled":"")+'>' +(selected.has(player.name)?"SELECTED":"SELECT")+'</button></div>'
-  ).join("");
+  $("playerCards").innerHTML=visiblePool.map((player,index)=>{
+    const stats=challengeMode
+      ? '<div class="hidden-stats">🔒 Stats hidden in Challenge Mode</div>'
+      : '<div class="ratings"><span>BAT<b>'+player.batting+'</b></span><span>BOWL<b>'+player.bowling+'</b></span><span>FIELD<b>'+player.fielding+'</b></span></div>';
+    return '<div class="card player-card"><div class="role">'+player.role+'</div><h3>'+player.name+'</h3>'+stats+'<button type="button" class="select-button" data-player-index="'+index+'" '+(selected.has(player.name)?"disabled":"")+'>' +(selected.has(player.name)?"SELECTED":"SELECT")+'</button></div>';
+  }).join("");
   $("playerCards").querySelectorAll("[data-player-index]").forEach(button=>{
     button.addEventListener("click",()=>selectPlayer(visiblePool[Number(button.dataset.playerIndex)]?.name));
   });
@@ -251,6 +306,7 @@ function renderDraft(){
   const wk=squad.filter(player=>player.role==="Wicketkeeper").length;
   $("roleWarning").textContent=squad.length===11?(bowl<3?"⚠️ Consider 3+ bowlers.":wk<1?"⚠️ No wicketkeeper selected.":"✅ XI ready."):"";
   $("startChallengeBtn").classList.toggle("hidden",squad.length!==11);
+  $("startChallengeBtn").textContent=challengeMode?"🔥 Start 20-match challenge":"🏏 Start game";
   $("startChallengeBtn").onclick=startChallenge;
   if(search && !search.dataset.bound){
     search.dataset.bound="1";
@@ -339,9 +395,10 @@ function viewHistory(){
 }
 function resetAll(){
   selectedMode=selectedCompetition=selectedTeam=selectedCountry=selectedEra="";
+  gameMode="";
   squad=[];currentMatch=1;currentStreak=0;history=[];draftSaves={};
   try{ localStorage.removeItem("cyb20Drafts"); }catch(error){}
-  show("home");updateHome();
+  show("home");updateHome();updateChallengeUI();
 }
 function updateHome(){
   $("homeStreak").textContent=currentStreak;
