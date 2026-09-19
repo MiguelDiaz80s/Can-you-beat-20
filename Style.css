@@ -8,3 +8,15 @@
 @keyframes slotLand{0%{transform:scale(.72);opacity:.2}70%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
 
 .team-search-card{margin:12px 0}.team-search{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:#083d2a;color:#fff;font:inherit;outline:none}.team-search::placeholder{color:rgba(255,255,255,.58)}.button-grid-inner{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.player-search-card{margin:10px 0 14px}
+
+.challenge-setting{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;padding:13px 14px;background:#0a5238;border:1px solid rgba(244,197,66,.25);border-radius:14px;text-align:left}
+.challenge-setting b{display:block;color:#f4c542;font-size:15px}
+.challenge-setting span{display:block;font-size:11px;opacity:.72;margin-top:3px}
+.switch{position:relative;width:58px;height:32px;flex:0 0 auto}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.slider{position:absolute;inset:0;cursor:pointer;background:#173d31;border:1px solid rgba(255,255,255,.16);border-radius:999px;transition:.2s}
+.slider:before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 2px 7px rgba(0,0,0,.3)}
+.switch input:checked+.slider{background:#f4c542;border-color:#f4c542}
+.switch input:checked+.slider:before{transform:translateX(26px);background:#14200b}
+.hidden-stats{display:flex;align-items:center;justify-content:center;min-height:53px;margin:9px 0;background:#0a5238;border-radius:7px;color:#f4c542;font-size:11px;font-weight:750}
+.challenge-on .player-card .ratings{display:none}
