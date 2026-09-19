@@ -22,3 +22,6 @@
 .challenge-on .player-card .ratings{display:none}
 
 .mode-link{display:block;text-align:center;text-decoration:none;line-height:40px}.mode-link:visited{color:#fff}.mode-link:hover{color:#fff}
+/* Final navigation safety: keep the four navigation controls above every card layer. */
+#modeButtons,#modeButtons .mode-button,#gender .mode-button{position:relative;z-index:9999;pointer-events:auto;display:block;}
+#modeButtons .mode-button,#gender .mode-button{width:100%;}
