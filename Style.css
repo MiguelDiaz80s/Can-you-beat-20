@@ -20,3 +20,5 @@
 .switch input:checked+.slider:before{transform:translateX(26px);background:#14200b}
 .hidden-stats{display:flex;align-items:center;justify-content:center;min-height:53px;margin:9px 0;background:#0a5238;border-radius:7px;color:#f4c542;font-size:11px;font-weight:750}
 .challenge-on .player-card .ratings{display:none}
+
+.mode-link{display:block;text-align:center;text-decoration:none;line-height:40px}.mode-link:visited{color:#fff}.mode-link:hover{color:#fff}
