@@ -70,6 +70,8 @@ function selectGender(gender){
   selectedMode=gender;
   if(gameMode==="FreePlay"){
     selectedCompetition="WORLD";
+    const back=$("teams")?.querySelector(".back-btn");
+    if(back) back.dataset.back="gender";
     renderTeams();
     show("teams");
   }else{
@@ -99,6 +101,8 @@ function renderCompetitions(){
 
 function chooseCompetition(c){
   selectedCompetition=c;
+  const back=$("teams")?.querySelector(".back-btn");
+  if(back) back.dataset.back="competition";
   if(gameMode==="RealGame"){
     randomizeRealGame(c);
     return;
