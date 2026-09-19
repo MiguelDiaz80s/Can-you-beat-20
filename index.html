@@ -18,13 +18,13 @@
 <div class="challenge-setting"><div><b>🔥 Challenge Mode</b><span id="challengeDescription">Stats visible</span></div><label class="switch"><input type="checkbox" id="challengeToggle"><span class="slider"></span></label></div>
 <div class="stat-row"><div><b id="homeStreak">0</b><span>Current streak</span></div><div><b id="homeBest">0</b><span>Best streak</span></div><div><b id="homeWins">0</b><span>Career wins</span></div></div></div>
 <div class="card"><h3>Game modes</h3><div id="modeButtons" class="button-grid">
-<a class="mode-button mode-link" data-game-mode="FreePlay" href="#gender?mode=FreePlay">🆓 Free Play</a>
-<a class="mode-button mode-link" data-game-mode="RealGame" href="#gender?mode=RealGame">🏏 Real Game</a>
+<button type="button" class="mode-button" id="freePlayButton">🆓 Free Play</button>
+<button type="button" class="mode-button" id="realGameButton">🏏 Real Game</button>
 </div></div>
 </section>
 <section id="gender" class="screen hidden"><div class="section-head"><button type="button" class="back-btn" data-back="home">← Back</button><h2>Choose players</h2></div><div class="button-grid">
-<a class="mode-button mode-link" data-gender="Mens" href="#next?gender=Mens">🏏 Men's Cricket</a>
-<a class="mode-button mode-link" data-gender="Womens" href="#next?gender=Womens">🏏 Women's Cricket</a>
+<button type="button" class="mode-button" id="mensButton">🏏 Men's Cricket</button>
+<button type="button" class="mode-button" id="womensButton">🏏 Women's Cricket</button>
 </div></section>
 <section id="competition" class="screen hidden"><div class="section-head"><button type="button" class="back-btn" data-back="home">← Back</button><h2>Choose competition</h2></div><div id="competitionButtons" class="button-grid"></div></section>
 <section id="teams" class="screen hidden"><div class="section-head"><button type="button" class="back-btn" data-back="competition">← Back</button><h2 id="teamTitle">Choose team</h2></div><button type="button" id="randomTeamBtn" class="gold wide">🎲 Random team + era</button><div id="randomizer" class="card randomizer hidden"><div class="eyebrow" id="randomizerLabel">RANDOM TEAM</div><div class="random-slot"><div id="randomSlotValue">🎲</div></div><p id="randomizerStatus" class="muted">Rolling...</p></div><div id="teamButtons" class="button-grid"></div></section>
@@ -37,6 +37,27 @@
 <script src="teams.js?v=20260924"></script>
 <script src="players.js?v=20260926"></script>
 <script src="players/australia.js?v=20260926"></script>
+<script>
+(function(){
+  function directShow(id){document.querySelectorAll(".screen").forEach(function(s){s.classList.add("hidden")});var t=document.getElementById(id);if(t)t.classList.remove("hidden");window.scrollTo(0,0);}
+  function mode(m){window.gameMode=m;directShow("gender");}
+  function gender(g){
+    window.selectedMode=g;
+    if(window.gameMode==="FreePlay"){
+      if(typeof window.selectGender==="function"){window.selectGender(g);}
+      else {directShow("teams");}
+    } else if(typeof window.selectGender==="function"){window.selectGender(g);}
+  }
+  function bind(){
+    var f=document.getElementById("freePlayButton"), r=document.getElementById("realGameButton"), m=document.getElementById("mensButton"), w=document.getElementById("womensButton");
+    if(f) f.addEventListener("click",function(e){e.preventDefault();mode("FreePlay");});
+    if(r) r.addEventListener("click",function(e){e.preventDefault();mode("RealGame");});
+    if(m) m.addEventListener("click",function(e){e.preventDefault();gender("Mens");});
+    if(w) w.addEventListener("click",function(e){e.preventDefault();gender("Womens");});
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind);else bind();
+})();
+</script>
 <script src="game.js?v=20260929"></script>
 <script>
 (function(){
