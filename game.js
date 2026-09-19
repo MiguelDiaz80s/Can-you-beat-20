@@ -45,35 +45,12 @@ function databaseTeams(){
 }
 const $=id=>document.getElementById(id);
 
-// First-screen navigation uses one delegated click handler as a safety net.
-// Capture phase means the mode/gender buttons are handled before any other
-// click handler can interfere with them.
-document.addEventListener("click",(event)=>{
-  const target=event.target.closest?.("[data-game-mode],[data-gender]");
-  if(!target) return;
-
-  if(target.dataset.gameMode){
-    event.preventDefault();
-    event.stopPropagation();
-    selectGameMode(target.dataset.gameMode);
-    return;
-  }
-
-  if(target.dataset.gender){
-    event.preventDefault();
-    event.stopPropagation();
-    selectGender(target.dataset.gender);
-  }
-},true);
-
 function init(){
-  const modeButtons=document.querySelectorAll("#modeButtons [data-game-mode]");
-  modeButtons.forEach(button=>{
-    button.addEventListener("click",()=>selectGameMode(button.dataset.gameMode));
+  document.querySelectorAll("#modeButtons [data-game-mode]").forEach(button=>{
+    button.onclick=()=>window.selectGameMode(button.dataset.gameMode);
   });
-  const genderButtons=document.querySelectorAll("#gender [data-gender]");
-  genderButtons.forEach(button=>{
-    button.addEventListener("click",()=>selectGender(button.dataset.gender));
+  document.querySelectorAll("#gender [data-gender]").forEach(button=>{
+    button.onclick=()=>window.selectGender(button.dataset.gender);
   });
   const challengeToggle=$("challengeToggle");
   if(challengeToggle){
@@ -108,6 +85,7 @@ function selectGameMode(mode){
   gameMode=mode;
   show("gender");
 }
+window.selectGameMode=selectGameMode;
 
 function selectGender(gender){
   selectedMode=gender;
@@ -123,6 +101,8 @@ function selectGender(gender){
     show("competition");
   }
 }
+
+window.selectGender=selectGender;
 
 function updateChallengeUI(){
   const toggle=$("challengeToggle");
