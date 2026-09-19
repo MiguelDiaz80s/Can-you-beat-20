@@ -446,3 +446,10 @@ function updateHome(){
 }
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
 else init();
+
+// Start the game after every script and DOM element has loaded.
+if(document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
