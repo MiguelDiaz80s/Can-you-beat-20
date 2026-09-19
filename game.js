@@ -14,6 +14,28 @@ function modeGender(){
   return selectedMode==="Womens" ? "female" : "male";
 }
 
+function linkStoredPlayers(){
+  // Bring the historical player files in /players into the live database.
+  // They are loaded before game.js, so this keeps the game connected to the
+  // stored historical data instead of leaving those players inaccessible.
+  if(typeof australia!=="undefined" && selectedMode==="Mens"){
+    const existing=playerDatabase["Australia"]||[];
+    const seen=new Set(existing.map(p=>p[0]));
+    Object.entries(australia).forEach(([era,players])=>{
+      players.forEach(p=>{
+        if(!seen.has(p.name)){
+          existing.push([p.name,p.role,p.batting,p.bowling,p.fielding,[era]]);
+          seen.add(p.name);
+        }else{
+          const item=existing.find(x=>x[0]===p.name);
+          if(item && !item[5].includes(era)) item[5].push(era);
+        }
+      });
+    });
+    playerDatabase["Australia"]=existing;
+  }
+}
+
 function databaseTeams(){
   if(typeof playerDatabase==="undefined") return [];
   const gender=modeGender();
@@ -68,6 +90,7 @@ function selectGameMode(mode){
 
 function selectGender(gender){
   selectedMode=gender;
+  linkStoredPlayers();
   if(gameMode==="FreePlay"){
     selectedCompetition="WORLD";
     const back=$("teams")?.querySelector(".back-btn");
@@ -315,6 +338,7 @@ function renderDraft(){
 }
 
 function rollNextNormalPick(){
+  linkStoredPlayers();
   const teams=databaseTeams();
   if(!teams.length) return;
   const team=teams[Math.floor(Math.random()*teams.length)];
