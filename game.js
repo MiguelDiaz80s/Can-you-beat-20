@@ -139,7 +139,7 @@ function renderTeams(){
   const draw=(term="")=>{
     const q=term.trim().toLowerCase();
     const filtered=q?teams.filter(team=>team.toLowerCase().includes(q)):teams;
-    list.innerHTML=filtered.map((team,index)=>
+    list.innerHTML=filtered.map(team=>
       '<button type="button" class="team-button" data-team="'+encodeURIComponent(team)+'">'+teamEmoji(team)+" "+team+"</button>"
     ).join("");
     list.querySelectorAll("[data-team]").forEach(button=>{
@@ -240,7 +240,6 @@ function spinSlot(items,finalValue,duration){
   });
 }
 
-
 function renderEras(){
   const box=$("eraButtons");
   if(!box) return;
@@ -266,9 +265,6 @@ function getPool(){
   const exact=raw.filter(player=>player[5].includes(selectedEra) && (player[6]||"male")===gender);
   let pool=exact.slice();
 
-  // Club pools are era-specific. Never fill a club era with players from
-  // another era, because that creates impossible combinations such as
-  // Australia legends appearing for the Melbourne Stars.
   const isClubPool=[...Object.keys(typeof teamData!=="undefined"?teamData:{}), "Adelaide Strikers","Brisbane Heat","Hobart Hurricanes","Melbourne Renegades","Melbourne Stars","Perth Scorchers","Sydney Sixers","Sydney Thunder"].includes(selectedCountry) && selectedCountry!==selectedTeam ? true : ["Adelaide Strikers","Brisbane Heat","Hobart Hurricanes","Melbourne Renegades","Melbourne Stars","Perth Scorchers","Sydney Sixers","Sydney Thunder"].includes(selectedCountry);
 
   if(!isClubPool && pool.length<14){
@@ -297,7 +293,7 @@ function renderDraft(){
     const stats=challengeMode
       ? '<div class="hidden-stats">🔒 Stats hidden in Challenge Mode</div>'
       : '<div class="ratings"><span>BAT<b>'+player.batting+'</b></span><span>BOWL<b>'+player.bowling+'</b></span><span>FIELD<b>'+player.fielding+'</b></span></div>';
-    return '<div class="card player-card"><div class="role">'+player.role+'</div><h3>'+player.name+'</h3>'+stats+'<button type="button" class="select-button" data-player-index="'+index+'" '+(selected.has(player.name)?"disabled":"")+'>' +(selected.has(player.name)?"SELECTED":"SELECT")+'</button></div>';
+    return '<div class="card player-card"><div class="role">'+player.role+'</div><h3>'+player.name+'</h3>'+stats+'<button type="button" class="select-button" data-player-index="'+index+'" '+(selected.has(player.name)?"disabled":"")+'>' +(selected.has(player.name)?"SELECTED":"SELECT")+"</button></div>";
   }).join("");
   $("playerCards").querySelectorAll("[data-player-index]").forEach(button=>{
     button.addEventListener("click",()=>selectPlayer(visiblePool[Number(button.dataset.playerIndex)]?.name));
@@ -318,10 +314,25 @@ function renderDraft(){
   }
 }
 
+function rollNextNormalPick(){
+  const teams=databaseTeams();
+  if(!teams.length) return;
+  const team=teams[Math.floor(Math.random()*teams.length)];
+  selectedTeam=team;
+  selectedCountry=(typeof teamData!=="undefined"?teamData[team]?.pool:null)||team;
+  const eras=getAvailableEras();
+  selectedEra=eras[Math.floor(Math.random()*eras.length)];
+}
+
 function selectPlayer(name){
   const player=getPool().find(item=>item.name===name);
   if(!player||squad.length>=11||squad.some(item=>item.name===name)) return;
   squad.push(player);
+
+  // In normal mode, every pick rolls a completely new team and era for
+  // the next player. Challenge Mode keeps the original team/era fixed.
+  if(!challengeMode && squad.length<11) rollNextNormalPick();
+
   renderDraft();
 }
 
@@ -381,7 +392,7 @@ function quickSim(){playMatch()}
 
 function renderResult(match){
   const win=match.result==="WIN",draw=match.result==="DRAW",cls=win?"result-win":draw?"result-draw":"result-loss",margin=Math.abs(match.your-match.oppScore);
-  $("matchPanel").innerHTML='<div class="card '+cls+'"><div class="eyebrow">MATCH '+match.n+'</div><h2>'+(win?"🏆 YOU WIN!":draw?"🤝 DRAW":"❌ DEFEAT")+'</h2><div class="scoreboard"><div><small>'+selectedTeam+'</small><div class="score">'+match.your+'</div></div><div class="vs">-</div><div><small>'+match.opp+'</small><div class="score">'+match.oppScore+'</div></div></div><p><b>'+(win?"Won by ":"Lost by ")+margin+' runs</b></p></div><div class="card"><h3>🔥 Streak: '+currentStreak+'/20</h3><p class="muted">Best: '+bestStreak+' • Career wins: '+careerWins+' • Losses: '+careerLosses+'</p><button type="button" class="gold wide" id="resultMainBtn">'+(win&&currentStreak>=20?"🏆 YOU BEAT 20!":match.result==="LOSS"?"🔄 Try again":"▶ Next match")+'</button><button type="button" class="wide" id="historyBtn">📋 Match history</button></div>';
+  $("matchPanel").innerHTML='<div class="card '+cls+'"><div class="eyebrow">MATCH '+match.n+'</div><h2>'+(win?"🏆 YOU WIN!":draw?"🤝 DRAW":"❌ DEFEAT")+'</h2><div class="scoreboard"><div><small>'+selectedTeam+'</small><div class="score">'+match.your+'</div></div><div class="vs">-</div><div><small>'+match.opp+'</small><div class="score">'+match.oppScore+'</div></div></div><p><b>'+(win?"Won by ":"Lost by ")+margin+" runs</b></p></div><div class="card"><h3>🔥 Streak: '+currentStreak+'/20</h3><p class="muted">Best: '+bestStreak+' • Career wins: '+careerWins+' • Losses: '+careerLosses+'</p><button type="button" class="gold wide" id="resultMainBtn">'+(win&&currentStreak>=20?"🏆 YOU BEAT 20!":match.result==="LOSS"?"🔄 Try again":"▶ Next match")+"</button><button type="button" class="wide" id="historyBtn">📋 Match history</button></div>';
   $("resultMainBtn").onclick=win&&currentStreak>=20?champion:match.result==="LOSS"?restartChallenge:nextMatch;
   $("historyBtn").onclick=viewHistory;
 }
