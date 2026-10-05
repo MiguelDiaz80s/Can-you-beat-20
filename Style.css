@@ -26,3 +26,12 @@
 #modeButtons,#modeButtons .mode-button,#gender .mode-button{position:relative;z-index:9999;pointer-events:auto;display:block;}
 #modeButtons .mode-button,#gender .mode-button{width:100%;}
 #modeButtons{gap:14px;}
+
+
+/* v2 match presentation: broadcast-style facts and readable mobile cards */
+.match-intel,.match-facts{display:block}
+.match-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.match-facts span{display:flex;flex-direction:column;gap:4px;padding:10px 9px;border:1px solid rgba(7,91,58,.12);border-radius:12px;background:rgba(7,91,58,.035);min-width:0}
+.match-facts small{font-size:10px;font-weight:800;letter-spacing:.08em;opacity:.62}
+.match-facts b{font-size:12px;overflow-wrap:anywhere}
+@media(max-width:560px){.match-facts{grid-template-columns:1fr 1fr}.match-facts span:last-child{grid-column:1/-1}}
