@@ -2,6 +2,8 @@ let selectedMode="",selectedCompetition="",selectedTeam="",selectedCountry="",se
 let gameMode="",challengeMode=false;
 let squad=[],currentMatch=1,currentStreak=0,bestStreak=0,careerWins=0,careerLosses=0,careerDraws=0,history=[];
 let draftSaves={};
+let nextMatchContext=null;
+const CAREER_KEY="cyb20CareerV2";
 const ERA_LIST=["1900s","1910s","1920s","1930s","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020s"];
 
 function getAvailableEras(){
@@ -71,6 +73,8 @@ function init(){
 
   renderCompetitions();
   renderEras();
+  loadCareer();
+  updateChallengeUI();
   updateHome();
 }
 
@@ -368,29 +372,134 @@ function startChallenge(){
   showMatchScreen();
 }
 
-function difficulty(){return Math.min(.16,(currentMatch-1)*.012)}
+function difficulty(){
+  return Math.min(.18,(currentMatch-1)*.009);
+}
+
+const TEAM_STRENGTHS={
+  Australia:92,India:91,England:88,South Africa:87,New Zealand:84,
+  Pakistan:84,Sri Lanka:78,"West Indies":79
+};
+
+const VENUES={
+  Australia:["MCG","SCG","Adelaide Oval","Gabba","Perth Stadium"],
+  India:["Wankhede","Eden Gardens","Chinnaswamy","Ahmedabad"],
+  England:["Lord's","The Oval","Old Trafford","Headingley"],
+  "South Africa":["Newlands","Wanderers","Centurion"],
+  "New Zealand":["Eden Park","Hagley Oval","Basin Reserve"],
+  Pakistan:["Gaddafi Stadium","National Stadium Karachi","Multan"],
+  "Sri Lanka":["Galle","R Premadasa","Pallekele"],
+  "West Indies":["Kensington Oval","Queen's Park Oval","Sabina Park"],
+  neutral:["Dubai International","Melbourne Stars Arena","Cricket Challenge Ground"]
+};
+
+const CONDITIONS=[
+  ["Fresh grass","extra seam early"],
+  ["Hard pitch","good pace and carry"],
+  ["Dry surface","spin becomes more dangerous"],
+  ["Flat deck","batters can score quickly"],
+  ["Overcast","late movement in the air"]
+];
+
+function loadCareer(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(CAREER_KEY)||"null");
+    if(!saved) return;
+    bestStreak=Number(saved.bestStreak)||0;
+    careerWins=Number(saved.careerWins)||0;
+    careerLosses=Number(saved.careerLosses)||0;
+    careerDraws=Number(saved.careerDraws)||0;
+  }catch(error){
+    console.warn("Career save could not be loaded.",error);
+  }
+}
+
+function saveCareer(){
+  try{
+    localStorage.setItem(CAREER_KEY,JSON.stringify({
+      bestStreak,careerWins,careerLosses,careerDraws
+    }));
+  }catch(error){
+    console.warn("Career save could not be written.",error);
+  }
+}
+
+function opponentName(){
+  const all=["Australia","India","England","South Africa","New Zealand","Pakistan","Sri Lanka","West Indies"];
+  const possible=all.filter(country=>country!==selectedCountry);
+  return possible[Math.floor(Math.random()*possible.length)]||"World XI";
+}
+
+function randomFrom(list){
+  return list[Math.floor(Math.random()*list.length)];
+}
+
+function competitionStrengthBonus(){
+  if(selectedCompetition==="Test") return 3;
+  if(selectedCompetition==="IPL"||selectedCompetition==="BBL") return 1;
+  if(selectedCompetition==="ICC") return 2;
+  return 0;
+}
+
+function buildMatchContext(){
+  const opponent=opponentName();
+  const countryForVenue=selectedCountry||"neutral";
+  const venues=VENUES[countryForVenue]||VENUES.neutral;
+  const condition=randomFrom(CONDITIONS);
+  const toss=randomFrom(["BAT FIRST","BOWL FIRST"]);
+  const oppBase=TEAM_STRENGTHS[opponent]||80;
+  const streakPressure=Math.min(6,currentStreak*.35);
+  return {
+    opponent,
+    venue:randomFrom(venues),
+    condition:condition[0],
+    pitchNote:condition[1],
+    toss,
+    opponentStrength:oppBase+competitionStrengthBonus()+Math.random()*4-2,
+    pressure:streakPressure
+  };
+}
 
 function squadStrength(){
   if(!squad.length) return 50;
   const bat=squad.reduce((sum,player)=>sum+player.batting,0)/squad.length;
   const bowl=squad.reduce((sum,player)=>sum+player.bowling,0)/squad.length;
   const field=squad.reduce((sum,player)=>sum+player.fielding,0)/squad.length;
-  const wk=squad.some(player=>player.role==="Wicketkeeper")?4:-4;
-  const balance=(squad.filter(player=>player.role==="Bowler").length>=3?3:0)+(squad.filter(player=>player.role==="Batter").length>=4?3:0);
-  return bat*.4+bowl*.4+field*.2+wk+balance;
+  const bowlers=squad.filter(player=>player.role==="Bowler").length;
+  const batters=squad.filter(player=>player.role==="Batter"||player.role==="All-rounder").length;
+  const keepers=squad.filter(player=>player.role==="Wicketkeeper").length;
+  const balance=(Math.min(5,bowlers)*1.4)+(Math.min(6,batters)*.8)+(keepers?3:-5);
+  const raw=bat*.42+bowl*.38+field*.20+balance;
+  return Math.max(45,Math.min(99,raw));
 }
 
-function opponentName(){
-  const all=["Australia","India","England","South Africa","New Zealand","Pakistan","Sri Lanka","West Indies"];
-  const possible=all.filter(country=>country!==selectedCountry);
-  return possible[Math.floor(Math.random()*possible.length)];
+function scoreRange(){
+  if(selectedCompetition==="Test") return [220,430];
+  if(selectedCompetition==="ODI") return [170,360];
+  return [105,235];
+}
+
+function choosePlayerOfMatch(){
+  if(!squad.length) return null;
+  const weighted=[];
+  squad.forEach(player=>{
+    const rating=(player.batting*.45+player.bowling*.45+player.fielding*.10);
+    for(let i=0;i<Math.max(1,Math.round(rating/10));i++) weighted.push(player);
+  });
+  return randomFrom(weighted)||squad[0];
 }
 
 function showMatchScreen(){
   show("match");
+  nextMatchContext=buildMatchContext();
+  const ctx=nextMatchContext;
   const pct=Math.min(100,currentStreak/20*100);
-  const opp=opponentName();
-  $("matchPanel").innerHTML='<div class="card"><div class="match-top"><div><div class="eyebrow">20-MATCH CHALLENGE</div><h2>Match '+currentMatch+'/20</h2></div><strong>🔥 '+currentStreak+'/20</strong></div><div class="progress"><div style="width:'+pct+'%"></div></div></div><div class="card scoreboard"><div><small>'+selectedTeam+'</small><div class="score">XI</div></div><div class="vs">VS</div><div><small>'+opp+'</small><div class="score">🏏</div></div></div><div class="card"><h3>Match plan</h3><p class="muted">XI strength: <b>'+Math.round(squadStrength())+'</b>. The challenge gets harder as the streak grows.</p><div class="match-actions"><button type="button" class="gold" id="playMatchBtn">▶ PLAY</button><button type="button" id="showSquadBtn">👥 XI</button></div><button type="button" class="wide" id="quickSimBtn">⏩ Quick simulate</button></div>';
+  const strength=Math.round(squadStrength());
+  $("matchPanel").innerHTML='<div class="card"><div class="match-top"><div><div class="eyebrow">20-MATCH CHALLENGE</div><h2>Match '+currentMatch+'/20</h2></div><strong>🔥 '+currentStreak+'/20</strong></div><div class="progress"><div style="width:'+pct+'%"></div></div></div>'+
+    '<div class="card scoreboard"><div><small>'+selectedTeam+'</small><div class="score">XI</div></div><div class="vs">VS</div><div><small>'+ctx.opponent+'</small><div class="score">🏏</div></div></div>'+
+    '<div class="card match-intel"><div class="match-facts"><span><small>VENUE</small><b>'+ctx.venue+'</b></span><span><small>PITCH</small><b>'+ctx.condition+'</b></span><span><small>TOSS</small><b>'+ctx.toss+'</b></span></div>'+
+    '<p class="muted">'+ctx.pitchNote+'. XI strength: <b>'+strength+'</b>. The challenge gets harder as your streak grows.</p>'+
+    '<div class="match-actions"><button type="button" class="gold" id="playMatchBtn">▶ PLAY</button><button type="button" id="showSquadBtn">👥 XI</button></div><button type="button" class="wide" id="quickSimBtn">⏩ Quick simulate</button></div>';
   $("playMatchBtn").onclick=playMatch;
   $("showSquadBtn").onclick=showSquad;
   $("quickSimBtn").onclick=quickSim;
@@ -399,29 +508,60 @@ function showMatchScreen(){
 function showSquad(){renderDraft();show("draft")}
 
 function playMatch(){
-  const opp=opponentName(),strength=squadStrength();
-  const base=.58+(strength-75)/180-difficulty()+(selectedCompetition==="Test"?.02:0);
+  const ctx=nextMatchContext||buildMatchContext();
+  const strength=squadStrength();
+  const matchup=(strength-ctx.opponentStrength)/100;
+  const tossEdge=ctx.toss==="BAT FIRST"?.012:.008;
+  const pressure=difficulty()+(ctx.pressure/100);
+  let winChance=.50+matchup*.56+tossEdge-pressure;
+  if(selectedCompetition==="Test") winChance+=.02;
+  winChance=Math.max(.16,Math.min(.86,winChance));
+
   const roll=Math.random();
-  let result=roll<Math.max(.25,Math.min(.9,base))?"WIN":roll<.96?"LOSS":"DRAW";
+  let result=roll<winChance?"WIN":roll<winChance+(selectedCompetition==="Test"?.08:.025)?"DRAW":"LOSS";
   if(result==="DRAW"&&selectedCompetition!=="Test") result="LOSS";
-  const your=Math.max(80,Math.floor(190+Math.random()*150+(strength-75)*1.2));
-  const oppScore=result==="WIN"?Math.max(70,your-Math.floor(8+Math.random()*65)):result==="LOSS"?your+Math.floor(5+Math.random()*65):your;
-  history.push({n:currentMatch,opp,result,your,oppScore});
+
+  const [minScore,maxScore]=scoreRange();
+  const baseYour=minScore+Math.random()*(maxScore-minScore);
+  const formBoost=(strength-75)*1.25+(currentStreak*1.4);
+  let your=Math.round(baseYour+formBoost);
+  let opp=Math.round(minScore+Math.random()*(maxScore-minScore)+(ctx.opponentStrength-80)*1.1);
+
+  if(result==="WIN") opp=Math.min(opp,your-Math.floor(5+Math.random()*45));
+  if(result==="LOSS") opp=Math.max(opp,your+Math.floor(5+Math.random()*45));
+  if(result==="DRAW") opp=your;
+
+  const mvp=choosePlayerOfMatch();
+  const margin=Math.abs(your-opp);
+  const factor=result==="WIN"
+    ? randomFrom(["Powerplay pressure","Clinical bowling","Middle-order recovery","Sharp fielding","Winning the toss"])
+    : result==="LOSS"
+      ? randomFrom(["Top order collapse","Opposition pace attack","Lost key moments","Middle overs leaked runs","Poor chase tempo"])
+      : "Neither side could break the deadlock";
+
+  const match={n:currentMatch,opp:ctx.opponent,result,your,oppScore:opp,venue:ctx.venue,condition:ctx.condition,toss:ctx.toss,mvp:mvp?mvp.name:"Team effort",factor,margin};
+
+  history.push(match);
   if(result==="WIN"){currentStreak++;careerWins++}else if(result==="LOSS"){currentStreak=0;careerLosses++}else careerDraws++;
   bestStreak=Math.max(bestStreak,currentStreak);
+  saveCareer();
   updateHome();
-  renderResult(history[history.length-1]);
+  nextMatchContext=null;
+  renderResult(match);
 }
 
 function quickSim(){playMatch()}
 
 function renderResult(match){
-  const win=match.result==="WIN",draw=match.result==="DRAW",cls=win?"result-win":draw?"result-draw":"result-loss",margin=Math.abs(match.your-match.oppScore);
-  $("matchPanel").innerHTML='<div class="card '+cls+'"><div class="eyebrow">MATCH '+match.n+'</div><h2>'+(win?"🏆 YOU WIN!":draw?"🤝 DRAW":"❌ DEFEAT")+'</h2><div class="scoreboard"><div><small>'+selectedTeam+'</small><div class="score">'+match.your+'</div></div><div class="vs">-</div><div><small>'+match.opp+'</small><div class="score">'+match.oppScore+'</div></div></div><p><b>'+(win?"Won by ":"Lost by ")+margin+" runs</b></p></div><div class="card"><h3>🔥 Streak: '+currentStreak+'/20</h3><p class="muted">Best: '+bestStreak+' • Career wins: '+careerWins+' • Losses: '+careerLosses+'</p><button type="button" class="gold wide" id="resultMainBtn">'+(win&&currentStreak>=20?"🏆 YOU BEAT 20!":match.result==="LOSS"?"🔄 Try again":"▶ Next match")+"</button><button type="button" class="wide" id="historyBtn">📋 Match history</button></div>';
+  const win=match.result==="WIN",draw=match.result==="DRAW",cls=win?"result-win":draw?"result-draw":"result-loss";
+  $("matchPanel").innerHTML='<div class="card '+cls+'"><div class="eyebrow">MATCH '+match.n+'</div><h2>'+(win?"🏆 YOU WIN!":draw?"🤝 DRAW":"❌ DEFEAT")+'</h2>'+
+    '<div class="scoreboard"><div><small>'+selectedTeam+'</small><div class="score">'+match.your+'</div></div><div class="vs">-</div><div><small>'+match.opp+'</small><div class="score">'+match.oppScore+'</div></div></div>'+
+    '<div class="match-facts"><span><small>VENUE</small><b>'+match.venue+'</b></span><span><small>PITCH</small><b>'+match.condition+'</b></span><span><small>FACTOR</small><b>'+match.factor+'</b></span></div>'+
+    '<p><b>'+ (win?"Won by ":draw?"Level score":"Lost by ") + (draw?"":match.margin+" runs") +'</b></p><p class="muted">Player of the match: <b>'+match.mvp+'</b></p></div>'+
+    '<div class="card"><h3>🔥 Streak: '+currentStreak+'/20</h3><p class="muted">Best: '+bestStreak+' • Career wins: '+careerWins+' • Losses: '+careerLosses+'</p><button type="button" class="gold wide" id="resultMainBtn">'+(win&&currentStreak>=20?"🏆 YOU BEAT 20!":match.result==="LOSS"?"🔄 Try again":"▶ Next match")+'</button><button type="button" class="wide" id="historyBtn">📋 Match history</button></div>';
   $("resultMainBtn").onclick=win&&currentStreak>=20?champion:match.result==="LOSS"?restartChallenge:nextMatch;
   $("historyBtn").onclick=viewHistory;
 }
-
 function nextMatch(){if(currentStreak>=20) champion(); else {currentMatch++;showMatchScreen()}}
 function restartChallenge(){currentMatch=1;currentStreak=0;history=[];showMatchScreen()}
 function champion(){
