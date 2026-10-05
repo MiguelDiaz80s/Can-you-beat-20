@@ -377,8 +377,8 @@ function difficulty(){
 }
 
 const TEAM_STRENGTHS={
-  Australia:92,India:91,England:88,South Africa:87,New Zealand:84,
-  Pakistan:84,Sri Lanka:78,"West Indies":79
+  Australia:92,India:91,England:88,"South Africa":87,"New Zealand":84,
+  Pakistan:84,"Sri Lanka":78,"West Indies":79
 };
 
 const VENUES={
